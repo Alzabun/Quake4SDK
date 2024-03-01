@@ -3,6 +3,7 @@
 
 #include "../Game_local.h"
 #include "../Weapon.h"
+#include "judgement.h"
 
 const int SHOTGUN_MOD_AMMO = BIT(0);
 
@@ -27,6 +28,8 @@ private:
 	stateResult_t		State_Idle		( const stateParms_t& parms );
 	stateResult_t		State_Fire		( const stateParms_t& parms );
 	stateResult_t		State_Reload	( const stateParms_t& parms );
+
+	int fireHeldTime;
 	
 	CLASS_STATES_PROTOTYPE( rvWeaponShotgun );
 };
@@ -50,6 +53,8 @@ rvWeaponShotgun::Spawn
 void rvWeaponShotgun::Spawn( void ) {
 	hitscans   = spawnArgs.GetFloat( "hitscans" );
 	
+	fireHeldTime = 0;
+
 	SetState( "Raise", 0 );	
 }
 
@@ -157,6 +162,22 @@ rvWeaponShotgun::State_Fire
 ================
 */
 stateResult_t rvWeaponShotgun::State_Fire( const stateParms_t& parms ) {
+
+	Performance result = Judgement(getInputTime()); // judgement stats
+
+	int bulletAmount = result.comboCount; // scales with combo
+	float firePower = 0.1f + (result.comboCount / 10); // scales with combo
+
+	int missCheck = 0; // this is only a thing because idk why i cant put startsound in judgement.cpp
+	if (result.missCount > missCheck) { // check for miss then play sound effect (more to be implemented)
+		StartSound("snd_charge", SND_CHANNEL_ITEM, 0, false, NULL);
+		missCheck = result.missCount;
+	}
+	if (result.comboCount >= 10) {
+		int bulletAmount = 10;
+		int firePower = 5.0f;
+	}
+
 	enum {
 		STAGE_INIT,
 		STAGE_WAIT,
@@ -164,8 +185,15 @@ stateResult_t rvWeaponShotgun::State_Fire( const stateParms_t& parms ) {
 	switch ( parms.stage ) {
 		case STAGE_INIT:
 			nextAttackTime = gameLocal.time + (fireRate * owner->PowerUpModifier ( PMOD_FIRERATE ));
-			Attack( false, hitscans, spread, 0, 1.0f );
+			
+			fireHeldTime = gameLocal.time;
+			setInputTime(fireHeldTime);
+
+			Attack( false, bulletAmount, spread - bulletAmount, 0, firePower );
 			PlayAnim( ANIMCHANNEL_ALL, "fire", 0 );	
+
+			fireHeldTime = 0;
+
 			return SRESULT_STAGE( STAGE_WAIT );
 	
 		case STAGE_WAIT:

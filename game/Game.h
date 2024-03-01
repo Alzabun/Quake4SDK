@@ -53,9 +53,9 @@ enum demoReliableGameMessage_t {
 	DEMO_RECORD_COUNT
 };
 
-//
+// ME: THIS LOOKS IMPORTANT
 // these defines work for all startsounds from all entity types
-// make sure to change script/doom_defs.script if you add any channels, or change their order
+// make sure to change script/doom_defs.script if you add any channels, or change their order // <- ME: CAN CHANNEL = MUSIC?
 //
 typedef enum {
 	SND_CHANNEL_ANY = SCHANNEL_ANY,

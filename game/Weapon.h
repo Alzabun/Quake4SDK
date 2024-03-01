@@ -13,7 +13,6 @@
 	
 ===============================================================================
 */
-
 typedef enum {
 	WP_READY,
 	WP_OUTOFAMMO,
@@ -85,6 +84,7 @@ public:
 	void					SetOverlayShader			( const idMaterial* material );
 
 	virtual void			GetPosition					( idVec3& origin, idMat3& axis ) const;
+
 
 private:
 
@@ -271,6 +271,17 @@ public:
 
 	idMat3				ForeshortenAxis				( const idMat3& axis ) const;
 
+	// ME:
+	void				setInputTime				(int time);
+	int					getInputTime				() const;
+
+	/*void setInputTime(int time) {
+		inputTime = time;
+	}
+	int getInputTime(int input) const {
+		return inputTime;
+	}*/
+
 	// Script state management
 	struct weaponStateFlags_s {
 		bool		attack				:1;
@@ -335,6 +346,8 @@ public:
 	int								altFireRate;
 	float							spread;
 	int								nextAttackTime;
+
+	int inputtime;
 
 	// we maintain local copies of the projectile and brass dictionaries so they
 	// do not have to be copied across the DLL boundary when entities are spawned
@@ -417,6 +430,7 @@ protected:
 	rvStateThread					stateThread;
 	int								animDoneTime[ANIM_NumAnimChannels];
 
+
 private:
 
 	stateResult_t			State_Raise				( const stateParms_t& parms );
@@ -431,6 +445,7 @@ private:
 
 	// multiplayer hitscans
 	int						hitscanAttackDef;
+
 
 	CLASS_STATES_PROTOTYPE ( rvWeapon );
 };

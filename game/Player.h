@@ -343,6 +343,7 @@ public:
 	
 	idUserInterface *		objectiveSystem;
 	idUserInterface *		cinematicHud;
+
 	bool					objectiveSystemOpen;
 	bool					objectiveButtonReleased;
 	bool					disableHud;
@@ -507,6 +508,8 @@ public:
 	void					DrawHUD( idUserInterface *hud );
 	void					StartRadioChatter ( void );
 	void					StopRadioChatter ( void );
+
+	void					DrawJudgement(idPlayer *player);
 
 	void					WeaponFireFeedback( const idDict *weaponDef );
 

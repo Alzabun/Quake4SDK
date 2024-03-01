@@ -17,6 +17,7 @@
 #include "ai/AAS_tactical.h"
 #include "Healing_Station.h"
 #include "ai/AI_Medic.h"
+#include "weapon/judgement.h"
 
 // RAVEN BEGIN
 // nrausch: support for turning the weapon change ui on and off
@@ -1798,6 +1799,8 @@ idUserInterface* idPlayer::GetCursorGUI( void ) {
 	return cursor;
 }
 
+
+
 /*
 ==============
 idPlayer::Spawn
@@ -1840,7 +1843,7 @@ void idPlayer::Spawn( void ) {
 		// load HUD
 		hud = NULL;
 		mphud = NULL;
- 		
+
 		overlayHud = NULL;
 		overlayHudTime = 0;
 		
@@ -1892,6 +1895,7 @@ void idPlayer::Spawn( void ) {
 		// if we want to display current votes that were started before a player was connected
 		// but are still being voted on, this should check the current vote and update the gui appropriately
 		gameLocal.mpGame.ClearVote( entityNumber );
+		
 	}
 
 	SetLastHitTime( 0, false );
@@ -3357,6 +3361,42 @@ void idPlayer::UpdateHudAmmo( idUserInterface *_hud ) {
 
 	inclip		= weapon->AmmoInClip();
 	ammoamount	= weapon->AmmoAvailable();
+	// ME: this may seem impractial to update the gui from here of all places but this seems to be working the most with what im wanting so 
+	//JUDGEMENT.
+	int songduration = 405000; // in MS
+	int currenttime = gameLocal.time;
+
+
+	if (!started || currenttime - starttime >= songduration) { // not running for some reason?
+		StartSound("snd_spindown", SND_CHANNEL_ANY, 0, false, 0); // plays Devil Trigger not fire0
+		starttime = currenttime;
+		started = true;
+	}
+	
+	static int lastinput = -1;
+	int input = beatTiming(weapon->getInputTime());
+
+	if (input != lastinput && input <= 200) {
+		_hud->SetStateInt("player_combo", (guicombo = guicombo + 1));
+		_hud->SetStateInt("player_input", input);
+	}
+
+	if (input <= 50) {
+		_hud->SetStateString("player_ranking", "Perfect");
+		
+	}
+	else if (input <= 100) {
+		_hud->SetStateString("player_ranking", "Great");
+	}
+	else if (input <= 200) {
+		_hud->SetStateString("player_ranking", "Good");
+	}
+	else {
+		_hud->SetStateString("player_ranking", "Miss");
+		_hud->SetStateInt("player_combo", (guicombo = 0));
+	}
+	
+	lastinput = input;
 
 	if ( ammoamount < 0 ) {
 		// show infinite ammo
@@ -3372,11 +3412,11 @@ void idPlayer::UpdateHudAmmo( idUserInterface *_hud ) {
 		else {
 			_hud->SetStateInt ( "player_totalammo", ammoamount - inclip );
 		}
-		_hud->SetStateInt ( "player_ammo", inclip );
+		_hud->SetStateInt("player_ammo", inclip );
 	} else {
 		_hud->SetStateFloat ( "player_ammopct", (float)ammoamount / (float)weapon->maxAmmo );
 		_hud->SetStateInt ( "player_totalammo", ammoamount );
-		_hud->SetStateInt ( "player_ammo", -1 );
+		_hud->SetStateInt("player_ammo", -1 );
 	} 
 
 	_hud->SetStateBool( "player_ammo_empty", ( ammoamount == 0 ) );
@@ -3387,58 +3427,92 @@ void idPlayer::UpdateHudAmmo( idUserInterface *_hud ) {
 idPlayer::UpdateHudStats
 ===============
 */
-void idPlayer::UpdateHudStats( idUserInterface *_hud ) {
+void idPlayer::UpdateHudStats(idUserInterface* _hud) {
 	int temp;
-	
-	assert ( _hud );
 
-	temp = _hud->State().GetInt ( "player_health", "-1" );
-	if ( temp != health ) {		
-		_hud->SetStateInt   ( "player_healthDelta", temp == -1 ? 0 : (temp - health) );
-		_hud->SetStateInt	( "player_health", health < -100 ? -100 : health );
-		_hud->SetStateFloat	( "player_healthpct", idMath::ClampFloat ( 0.0f, 1.0f, (float)health / (float)inventory.maxHealth ) );
-		_hud->HandleNamedEvent ( "updateHealth" );
+	assert(_hud);
+
+	temp = _hud->State().GetInt("player_health", "-1");
+	if (temp != health) {
+		_hud->SetStateInt("player_healthDelta", temp == -1 ? 0 : (temp - health));
+		_hud->SetStateInt("player_health", health < -100 ? -100 : health);
+		_hud->SetStateFloat("player_healthpct", idMath::ClampFloat(0.0f, 1.0f, (float)health / (float)inventory.maxHealth));
+		_hud->HandleNamedEvent("updateHealth");
 	}
-		
-	temp = _hud->State().GetInt ( "player_armor", "-1" );
-	if ( temp != inventory.armor ) {
-		_hud->SetStateInt ( "player_armorDelta", temp == -1 ? 0 : (temp - inventory.armor) );
-		_hud->SetStateInt ( "player_armor", inventory.armor );
-		_hud->SetStateFloat	( "player_armorpct", idMath::ClampFloat ( 0.0f, 1.0f, (float)inventory.armor / (float)inventory.maxarmor ) );
-		_hud->HandleNamedEvent ( "updateArmor" );
+
+	temp = _hud->State().GetInt("player_armor", "-1");
+	if (temp != inventory.armor) {
+		_hud->SetStateInt("player_armorDelta", temp == -1 ? 0 : (temp - inventory.armor));
+		_hud->SetStateInt("player_armor", inventory.armor);
+		_hud->SetStateFloat("player_armorpct", idMath::ClampFloat(0.0f, 1.0f, (float)inventory.armor / (float)inventory.maxarmor));
+		_hud->HandleNamedEvent("updateArmor");
 	}
-	
+
 	// Boss bar
-	if ( _hud->State().GetInt ( "boss_health", "-1" ) != (bossEnemy ? bossEnemy->health : -1) ) {
-		if ( !bossEnemy || bossEnemy->health <= 0 ) {
+	if (_hud->State().GetInt("boss_health", "-1") != (bossEnemy ? bossEnemy->health : -1)) {
+		if (!bossEnemy || bossEnemy->health <= 0) {
 			bossEnemy = NULL;
-			_hud->SetStateInt ( "boss_health", -1 );
-			_hud->HandleNamedEvent ( "hideBossBar" );			
- 			_hud->HandleNamedEvent ( "hideBossShieldBar" ); // grrr, for boss buddy..but maybe other bosses will have shields?
-		} else {			
-			_hud->SetStateInt ( "boss_health", bossEnemy->health );
-			_hud->HandleNamedEvent ( "updateBossBar" );
+			_hud->SetStateInt("boss_health", -1);
+			_hud->HandleNamedEvent("hideBossBar");
+			_hud->HandleNamedEvent("hideBossShieldBar"); // grrr, for boss buddy..but maybe other bosses will have shields?
+		}
+		else {
+			_hud->SetStateInt("boss_health", bossEnemy->health);
+			_hud->HandleNamedEvent("updateBossBar");
 		}
 	}
-		
+
+
 	// god mode information
-	_hud->SetStateString( "player_god", va( "%i", (godmode && g_showGodDamage.GetBool()) ) );
-	_hud->SetStateString( "player_god_damage", va( "%i", godmodeDamage ) );
+	_hud->SetStateString("player_god", va("%i", (godmode && g_showGodDamage.GetBool())));
+	_hud->SetStateString("player_god_damage", va("%i", godmodeDamage));
 
 	// Update the hit direction
 	idVec3 localDir;
-	viewAxis.ProjectVector( lastDamageDir, localDir );
-	_hud->SetStateFloat( "hitdir", localDir.ToAngles()[YAW] + 180.0f );
+	viewAxis.ProjectVector(lastDamageDir, localDir);
+	_hud->SetStateFloat("hitdir", localDir.ToAngles()[YAW] + 180.0f);
 
 	//_hud->HandleNamedEvent( "updateArmorHealthAir" );
-
-	if ( weapon ) {
-		UpdateHudAmmo( _hud );
+	//rvWeapon weaponBlaster;
+	//int input = weaponBlaster.getInputTime();
+	if (weapon) {
+		UpdateHudAmmo(_hud);
 	}
-	
+
 	_hud->StateChanged( gameLocal.time );
 }
 
+/*
+// ME : JudgementGUI please work
+*/
+/*
+void idPlayer::DrawJudgement(// this could just be empty? idPlayer *player) {
+	rvWeapon weaponBlaster;
+	int timer = beatTiming(weaponBlaster.getInputTime());
+	if (timer != 0) {
+		if (timer <= 100) {
+			idUserInterface* perfect = uiManager->FindGui("guis/judgementPerfect.gui", true, false, true);
+			perfect->Activate(true, gameLocal.time);
+			//hud->HandleNamedEvent("judgementPerfect");
+		}
+		else if (timer <= 200) {
+			idUserInterface* great = uiManager->FindGui("guis/judgementGreat.gui", true, false, true);
+			great->Activate(true, gameLocal.time);
+			//hud->HandleNamedEvent("judgementGreat");
+		}
+		else if (timer <= 300) {
+			idUserInterface* good = uiManager->FindGui("guis/judgementGood.gui", true, false, true);
+			good->Activate(true, gameLocal.time);
+			//hud->HandleNamedEvent("judgementGood");
+		}
+		else if (timer <= 500) {
+			idUserInterface* miss = uiManager->FindGui("guis/judgementMiss.gui", true, false, true);
+			miss->Activate(true, gameLocal.time);
+			//hud->HandleNamedEvent("judgementMiss");
+		}
+	}
+}
+*/
 /*
 ===============
 idPlayer::UpdateHudWeapon
@@ -9180,6 +9254,30 @@ void idPlayer::UpdateHud( void ) {
  	} else {
  		hud->SetStateString( "hudLag", "0" );
  	}
+
+	/*//DrawJudgement(player); // how do i call this?
+	//int timer = beatTiming(input);
+	// ME:
+	if (timer <= 100) {
+		idUserInterface* perfect = uiManager->FindGui("guis/judgementPerfect.gui", true, false, true);
+		perfect->Activate(true, gameLocal.time);
+		//hud->HandleNamedEvent("judgementPerfect");
+	}
+	else if (timer <= 200) {
+		idUserInterface* great = uiManager->FindGui("guis/judgementGreat.gui", true, false, true);
+		great->Activate(true, gameLocal.time);
+		//hud->HandleNamedEvent("judgementGreat");
+	}
+	else if (timer <= 300) {
+		idUserInterface* good = uiManager->FindGui("guis/judgementGood.gui", true, false, true);
+		good->Activate(true, gameLocal.time);
+		//hud->HandleNamedEvent("judgementGood");
+	}
+	else if (timer <= 500) {
+		idUserInterface* miss = uiManager->FindGui("guis/judgementMiss.gui", true, false, true);
+		miss->Activate(true, gameLocal.time);
+		//hud->HandleNamedEvent("judgementMiss");
+	}*/
 }
 
 /*

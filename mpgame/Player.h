@@ -492,6 +492,8 @@ public:
 	void					DrawHUD( idUserInterface *hud );
 	void					DrawInput();
 
+	void					DrawJudgement(idPlayer* player);
+
 	void					StartRadioChatter ( void );
 	void					StopRadioChatter ( void );
 

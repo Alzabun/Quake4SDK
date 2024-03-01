@@ -248,7 +248,7 @@ void idSound::SetSound( const char *sound, int channel ) {
 idSound::DoSound
 ================
 */
-void idSound::DoSound( bool play ) {
+void idSound::DoSound( bool play ) { // ME: literally sound
 	if ( play ) {
 		StartSoundShader( refSound.shader, SND_CHANNEL_ANY, refSound.parms.soundShaderFlags, true, &playingUntilTime );
 		playingUntilTime += gameLocal.time;

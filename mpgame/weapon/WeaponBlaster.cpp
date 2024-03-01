@@ -337,7 +337,7 @@ stateResult_t rvWeaponBlaster::State_Charge ( const stateParms_t& parms ) {
 	switch ( parms.stage ) {
 		case CHARGE_INIT:
 			viewModel->SetShaderParm ( BLASTER_SPARM_CHARGEGLOW, chargeGlow[0] );
-			StartSound ( "snd_charge", SND_CHANNEL_ITEM, 0, false, NULL );
+			//StartSound ( "snd_charge", SND_CHANNEL_ITEM, 0, false, NULL );
 			PlayCycle( ANIMCHANNEL_ALL, "charging", parms.blendFrames );
 			return SRESULT_STAGE ( CHARGE_WAIT );
 			
@@ -377,8 +377,8 @@ stateResult_t rvWeaponBlaster::State_Charged ( const stateParms_t& parms ) {
 			viewModel->SetShaderParm ( BLASTER_SPARM_CHARGEGLOW, 1.0f  );
 
 			StopSound ( SND_CHANNEL_ITEM, false );
-			StartSound ( "snd_charge_loop", SND_CHANNEL_ITEM, 0, false, NULL );
-			StartSound ( "snd_charge_click", SND_CHANNEL_BODY, 0, false, NULL );
+			//StartSound ( "snd_charge_loop", SND_CHANNEL_ITEM, 0, false, NULL );
+			//StartSound ( "snd_charge_click", SND_CHANNEL_BODY, 0, false, NULL );
 			return SRESULT_STAGE(CHARGED_WAIT);
 			
 		case CHARGED_WAIT:

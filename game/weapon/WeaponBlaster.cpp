@@ -3,6 +3,7 @@
 
 #include "../Game_local.h"
 #include "../Weapon.h"
+#include "judgement.h"
 
 #define BLASTER_SPARM_CHARGEGLOW		6
 
@@ -44,8 +45,12 @@ private:
 	CLASS_STATES_PROTOTYPE ( rvWeaponBlaster );
 };
 
-CLASS_DECLARATION( rvWeapon, rvWeaponBlaster )
+CLASS_DECLARATION(rvWeapon, rvWeaponBlaster)
 END_CLASS
+
+
+
+
 
 /*
 ================
@@ -92,6 +97,8 @@ rvWeaponBlaster::UpdateAttack
 ================
 */
 bool rvWeaponBlaster::UpdateAttack ( void ) {
+
+
 	// Clear fire forced
 	if ( fireForced ) {
 		if ( !wsfl.attack ) {
@@ -103,29 +110,31 @@ bool rvWeaponBlaster::UpdateAttack ( void ) {
 
 	// If the player is pressing the fire button and they have enough ammo for a shot
 	// then start the shooting process.
-	if ( wsfl.attack && gameLocal.time >= nextAttackTime ) {
-		// Save the time which the fire button was pressed
+	if ( wsfl.attack && gameLocal.time >= nextAttackTime ) { //ME: THIS SEEMS IMPORTANT FOR RHYTHM TIMING, BUT FIND OUT WHERE TO ADD BPM SYSTEM
+		// Save the time which the fire button was pressed   // MAYBE IN WEAPON.H AND WEAPON.CPP?
 		if ( fireHeldTime == 0 ) {		
-			nextAttackTime = gameLocal.time + (fireRate * owner->PowerUpModifier ( PMOD_FIRERATE ));
-			fireHeldTime   = gameLocal.time;
+			nextAttackTime = gameLocal.time + (fireRate * owner->PowerUpModifier(PMOD_FIRERATE));
+			fireHeldTime   = gameLocal.time; // ME: use this for player input i guess
+			setInputTime(fireHeldTime);
+			
 			viewModel->SetShaderParm ( BLASTER_SPARM_CHARGEGLOW, chargeGlow[0] );
+			// ME: turns out, i dont need to modify this part i think
 		}
 	}		
-
+	 
 	// If they have the charge mod and they have overcome the initial charge 
 	// delay then transition to the charge state.
-	if ( fireHeldTime != 0 ) {
-		if ( gameLocal.time - fireHeldTime > chargeDelay ) {
+	if ( fireHeldTime > gameLocal.time ) {
+		if (gameLocal.time - fireHeldTime > chargeDelay) { // ignore hold charge
 			SetState ( "Charge", 4 );
 			return true;
 		}
-
 		// If the fire button was let go but was pressed at one point then 
 		// release the shot.
 		if ( !wsfl.attack ) {
 			idPlayer * player = gameLocal.GetLocalPlayer();
 			if( player )	{
-			
+
 				if( player->GuiActive())	{
 					//make sure the player isn't looking at a gui first
 					SetState ( "Lower", 0 );
@@ -157,6 +166,8 @@ void rvWeaponBlaster::Spawn ( void ) {
 	fireForced			= false;
 			
 	Flashlight ( owner->IsFlashlightOn() );
+
+	//StartSound("snd_pain_small", SND_CHANNEL_ANY, 0, false, NULL);
 }
 
 /*
@@ -329,19 +340,20 @@ stateResult_t rvWeaponBlaster::State_Idle ( const stateParms_t& parms ) {
 rvWeaponBlaster::State_Charge
 ================
 */
-stateResult_t rvWeaponBlaster::State_Charge ( const stateParms_t& parms ) {
+stateResult_t rvWeaponBlaster::State_Charge ( const stateParms_t& parms ) { // ME: NO CHARGING!!!
 	enum {
 		CHARGE_INIT,
 		CHARGE_WAIT,
 	};	
 	switch ( parms.stage ) {
 		case CHARGE_INIT:
-			viewModel->SetShaderParm ( BLASTER_SPARM_CHARGEGLOW, chargeGlow[0] );
+			viewModel->SetShaderParm(BLASTER_SPARM_CHARGEGLOW, chargeGlow[0]);
 			StartSound ( "snd_charge", SND_CHANNEL_ITEM, 0, false, NULL );
 			PlayCycle( ANIMCHANNEL_ALL, "charging", parms.blendFrames );
 			return SRESULT_STAGE ( CHARGE_WAIT );
 			
 		case CHARGE_WAIT:	
+			
 			if ( gameLocal.time - fireHeldTime < chargeTime ) {
 				float f;
 				f = (float)(gameLocal.time - fireHeldTime) / (float)chargeTime;
@@ -356,7 +368,7 @@ stateResult_t rvWeaponBlaster::State_Charge ( const stateParms_t& parms ) {
 				
 				return SRESULT_WAIT;
 			} 
-			SetState ( "Charged", 4 );
+			SetState ( "Charged", 4 ); 
 			return SRESULT_DONE;
 	}
 	return SRESULT_ERROR;	
@@ -373,21 +385,25 @@ stateResult_t rvWeaponBlaster::State_Charged ( const stateParms_t& parms ) {
 		CHARGED_WAIT,
 	};	
 	switch ( parms.stage ) {
-		case CHARGED_INIT:		
+		case CHARGED_INIT:	
+			
 			viewModel->SetShaderParm ( BLASTER_SPARM_CHARGEGLOW, 1.0f  );
 
 			StopSound ( SND_CHANNEL_ITEM, false );
 			StartSound ( "snd_charge_loop", SND_CHANNEL_ITEM, 0, false, NULL );
 			StartSound ( "snd_charge_click", SND_CHANNEL_BODY, 0, false, NULL );
+
 			return SRESULT_STAGE(CHARGED_WAIT);
 			
 		case CHARGED_WAIT:
+			
 			if ( !wsfl.attack ) {
 				fireForced = true;
 				SetState ( "Fire", 0 );
 				return SRESULT_DONE;
 			}
 			return SRESULT_WAIT;
+			
 	}
 	return SRESULT_ERROR;
 }
@@ -397,60 +413,88 @@ stateResult_t rvWeaponBlaster::State_Charged ( const stateParms_t& parms ) {
 rvWeaponBlaster::State_Fire
 ================
 */
-stateResult_t rvWeaponBlaster::State_Fire ( const stateParms_t& parms ) {
-	enum {
+stateResult_t rvWeaponBlaster::State_Fire(const stateParms_t& parms) { // ME: dont forget about this... also idea a reward can be more powerful bullets
+	enum {																  // remember def file editing (look in mods/def/weapons folder)
 		FIRE_INIT,
 		FIRE_WAIT,
-	};	
-	switch ( parms.stage ) {
-		case FIRE_INIT:	
+	};
+	switch (parms.stage) {
+	case FIRE_INIT:
 
-			StopSound ( SND_CHANNEL_ITEM, false );
-			viewModel->SetShaderParm ( BLASTER_SPARM_CHARGEGLOW, 0 );
-			//don't fire if we're targeting a gui.
-			idPlayer* player;
-			player = gameLocal.GetLocalPlayer();
+		StopSound(SND_CHANNEL_ITEM, false);
+		viewModel->SetShaderParm(BLASTER_SPARM_CHARGEGLOW, 0);
+		//don't fire if we're targeting a gui.
+		idPlayer* player;
+		player = gameLocal.GetLocalPlayer();
 
-			//make sure the player isn't looking at a gui first
-			if( player && player->GuiActive() )	{
-				fireHeldTime = 0;
-				SetState ( "Lower", 0 );
-				return SRESULT_DONE;
-			}
-
-			if( player && !player->CanFire() )	{
-				fireHeldTime = 0;
-				SetState ( "Idle", 4 );
-				return SRESULT_DONE;
-			}
-
-
-	
-			if ( gameLocal.time - fireHeldTime > chargeTime ) {	
-				Attack ( true, 1, spread, 0, 1.0f );
-				PlayEffect ( "fx_chargedflash", barrelJointView, false );
-				PlayAnim( ANIMCHANNEL_ALL, "chargedfire", parms.blendFrames );
-			} else {
-				Attack ( false, 1, spread, 0, 1.0f );
-				PlayEffect ( "fx_normalflash", barrelJointView, false );
-				PlayAnim( ANIMCHANNEL_ALL, "fire", parms.blendFrames );
-			}
+		//make sure the player isn't looking at a gui first
+		if (player && player->GuiActive()) {
 			fireHeldTime = 0;
-			
-			return SRESULT_STAGE(FIRE_WAIT);
+			SetState("Lower", 0);
+			return SRESULT_DONE;
+		}
+
+		if (player && !player->CanFire()) {
+			fireHeldTime = 0;
+			SetState("Idle", 4);
+			return SRESULT_DONE;
+		}
 		
+
+			// ME: use player-> to run most console commands relating t player like player->teleport(lba, bla , bla, bla)
+			// just from this information you can probably figure out the rest from SysCmds.cpp
+			// apparently this can be used to give power ups too but idk what those do
+			if (gameLocal.time - fireHeldTime > chargeTime) {	// ME: NO CHARGING!!!
+				Attack(false, 1, spread, 0, 1.0f);
+				PlayEffect("fx_chargedflash", barrelJointView, false);
+				PlayAnim(ANIMCHANNEL_ALL, "chargedfire", parms.blendFrames);
+			}
+			else {
+				//int beattime = gameLocal.time % BPMS;
+
+			 // TIMING CHECK ACCORDING TO BEATS IN BETWEEN SECONDS
+				Performance result = Judgement(getInputTime()); // judgement stats
+
+				int bulletAmount = result.comboCount; // scales with combo
+				float firePower = 0.1f + (result.comboCount / 10); // scales with combo
+
+				int missCheck = 0; // this is only a thing because idk why i cant put startsound in judgement.cpp
+				if (result.missCount > missCheck) { // check for miss then play sound effect (more to be implemented)
+					StartSound("snd_charge", SND_CHANNEL_ITEM, 0, false, NULL); // this isnt actually the charge sound i changed it
+					missCheck = result.missCount;
+					// add something to decrease hp here or something
+					// maybe slowness effect?
+					// then add a way for it to recover afterwards
+				}
+				if (result.comboCount >= 10) { // combo increases blaster stats (more bullets and firepower) but caps at 10 // DANMAKU'S ALL ABOUT FIREPOWER DA ZE
+					int bulletAmount = 10;
+					int firePower = 5.0f;
+					if (result.comboCount >= 25) { // if combo is high enough then continue to next gun (permanent)
+						player->GiveItem("weapon_shotgun");
+					}
+				}
+				Attack(false, bulletAmount, spread * bulletAmount, 0, firePower);
+				PlayEffect("fx_normalflash", barrelJointView, false);
+				PlayAnim(ANIMCHANNEL_ALL, "fire", parms.blendFrames);
+			}
+
+			fireHeldTime = 0;
+
+			return SRESULT_STAGE(FIRE_WAIT);
+
 		case FIRE_WAIT:
-			if ( AnimDone ( ANIMCHANNEL_ALL, 4 ) ) {
-				SetState ( "Idle", 4 );
+			if (AnimDone(ANIMCHANNEL_ALL, 4)) {
+				SetState("Idle", 4);
 				return SRESULT_DONE;
 			}
-			if ( UpdateFlashlight ( ) || UpdateAttack ( ) ) {
+			if (UpdateFlashlight() || UpdateAttack()) {
 				return SRESULT_DONE;
 			}
 			return SRESULT_WAIT;
-	}			
+	}
 	return SRESULT_ERROR;
 }
+
 
 /*
 ================
