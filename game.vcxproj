@@ -361,6 +361,7 @@
     <ClCompile Include="game\vehicle\Vehicle_DropPod.cpp" />
     <ClCompile Include="game\vehicle\Vehicle_Walker.cpp" />
     <ClCompile Include="game\Weapon.cpp" />
+    <ClCompile Include="game\weapon\judgement.cpp" />
     <ClCompile Include="game\weapon\WeaponBlaster.cpp" />
     <ClCompile Include="game\weapon\WeaponDarkMatterGun.cpp" />
     <ClCompile Include="game\weapon\WeaponGauntlet.cpp" />
@@ -374,7 +375,6 @@
     <ClCompile Include="game\weapon\WeaponRocketLauncher.cpp" />
     <ClCompile Include="game\weapon\WeaponShotgun.cpp" />
     <ClCompile Include="game\WorldSpawn.cpp" />
-    <ClCompile Include="judgement.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="game\Actor.h" />
@@ -480,8 +480,8 @@
     <ClInclude Include="game\vehicle\VehicleSpline.h" />
     <ClInclude Include="game\vehicle\VehicleStatic.h" />
     <ClInclude Include="game\Weapon.h" />
+    <ClInclude Include="game\weapon\judgement.h" />
     <ClInclude Include="game\WorldSpawn.h" />
-    <ClInclude Include="judgement.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="game\Game.def" />

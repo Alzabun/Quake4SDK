@@ -516,7 +516,7 @@
     <ClCompile Include="game\mp\stats\StatWindow.cpp">
       <Filter>Game\MP\Stats</Filter>
     </ClCompile>
-    <ClCompile Include="judgement.cpp">
+    <ClCompile Include="game\weapon\judgement.cpp">
       <Filter>Game\Weapon</Filter>
     </ClCompile>
   </ItemGroup>
@@ -833,7 +833,7 @@
     <ClInclude Include="game\mp\stats\StatWindow.h">
       <Filter>Game\MP\Stats</Filter>
     </ClInclude>
-    <ClInclude Include="judgement.h">
+    <ClInclude Include="game\weapon\judgement.h">
       <Filter>Game\Weapon</Filter>
     </ClInclude>
   </ItemGroup>

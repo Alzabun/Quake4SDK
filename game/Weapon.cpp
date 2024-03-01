@@ -2314,7 +2314,6 @@ bool rvWeapon::GetGlobalJointTransform(bool view, const jointHandle_t jointHandl
 	return false;
 }
 
-// ME: please work
 int rvWeapon::getInputTime() const {
 	return inputtime;
 }

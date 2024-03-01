@@ -3368,7 +3368,7 @@ void idPlayer::UpdateHudAmmo( idUserInterface *_hud ) {
 
 
 	if (!started || currenttime - starttime >= songduration) { // not running for some reason?
-		StartSound("snd_spindown", SND_CHANNEL_ANY, 0, false, 0); // plays Devil Trigger not fire0
+		StartSound("snd_spindown", SND_CHANNEL_ANY, 0, false, 0); // plays Devil Trigger not spindown
 		starttime = currenttime;
 		started = true;
 	}
@@ -3381,14 +3381,14 @@ void idPlayer::UpdateHudAmmo( idUserInterface *_hud ) {
 		_hud->SetStateInt("player_input", input);
 	}
 
-	if (input <= 50) {
+	if (input <= 75) {
 		_hud->SetStateString("player_ranking", "Perfect");
 		
 	}
 	else if (input <= 100) {
 		_hud->SetStateString("player_ranking", "Great");
 	}
-	else if (input <= 200) {
+	else if (input <= 125) {
 		_hud->SetStateString("player_ranking", "Good");
 	}
 	else {
@@ -3482,37 +3482,6 @@ void idPlayer::UpdateHudStats(idUserInterface* _hud) {
 	_hud->StateChanged( gameLocal.time );
 }
 
-/*
-// ME : JudgementGUI please work
-*/
-/*
-void idPlayer::DrawJudgement(// this could just be empty? idPlayer *player) {
-	rvWeapon weaponBlaster;
-	int timer = beatTiming(weaponBlaster.getInputTime());
-	if (timer != 0) {
-		if (timer <= 100) {
-			idUserInterface* perfect = uiManager->FindGui("guis/judgementPerfect.gui", true, false, true);
-			perfect->Activate(true, gameLocal.time);
-			//hud->HandleNamedEvent("judgementPerfect");
-		}
-		else if (timer <= 200) {
-			idUserInterface* great = uiManager->FindGui("guis/judgementGreat.gui", true, false, true);
-			great->Activate(true, gameLocal.time);
-			//hud->HandleNamedEvent("judgementGreat");
-		}
-		else if (timer <= 300) {
-			idUserInterface* good = uiManager->FindGui("guis/judgementGood.gui", true, false, true);
-			good->Activate(true, gameLocal.time);
-			//hud->HandleNamedEvent("judgementGood");
-		}
-		else if (timer <= 500) {
-			idUserInterface* miss = uiManager->FindGui("guis/judgementMiss.gui", true, false, true);
-			miss->Activate(true, gameLocal.time);
-			//hud->HandleNamedEvent("judgementMiss");
-		}
-	}
-}
-*/
 /*
 ===============
 idPlayer::UpdateHudWeapon
@@ -9254,30 +9223,6 @@ void idPlayer::UpdateHud( void ) {
  	} else {
  		hud->SetStateString( "hudLag", "0" );
  	}
-
-	/*//DrawJudgement(player); // how do i call this?
-	//int timer = beatTiming(input);
-	// ME:
-	if (timer <= 100) {
-		idUserInterface* perfect = uiManager->FindGui("guis/judgementPerfect.gui", true, false, true);
-		perfect->Activate(true, gameLocal.time);
-		//hud->HandleNamedEvent("judgementPerfect");
-	}
-	else if (timer <= 200) {
-		idUserInterface* great = uiManager->FindGui("guis/judgementGreat.gui", true, false, true);
-		great->Activate(true, gameLocal.time);
-		//hud->HandleNamedEvent("judgementGreat");
-	}
-	else if (timer <= 300) {
-		idUserInterface* good = uiManager->FindGui("guis/judgementGood.gui", true, false, true);
-		good->Activate(true, gameLocal.time);
-		//hud->HandleNamedEvent("judgementGood");
-	}
-	else if (timer <= 500) {
-		idUserInterface* miss = uiManager->FindGui("guis/judgementMiss.gui", true, false, true);
-		miss->Activate(true, gameLocal.time);
-		//hud->HandleNamedEvent("judgementMiss");
-	}*/
 }
 
 /*
