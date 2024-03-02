@@ -13,6 +13,8 @@
 bool started = false;
 int starttime = 0;
 int guicombo = 0;
+int songduration = 405000; // in MS
+int currenttime = gameLocal.time;
 
 int beatTiming(int input/*, int BPM */) {
 	int BPM = 160;

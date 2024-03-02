@@ -124,9 +124,9 @@ bool rvWeaponBlaster::UpdateAttack ( void ) {
 	 
 	// If they have the charge mod and they have overcome the initial charge 
 	// delay then transition to the charge state.
-	if ( fireHeldTime > gameLocal.time ) {
-		if (gameLocal.time - fireHeldTime > chargeDelay) { // ignore hold charge
-			SetState ( "Charge", 4 );
+	if ( fireHeldTime != 0 ) {
+		if (gameLocal.time - fireHeldTime > chargeDelay) {
+			SetState ( "Idle", 0 ); // ME: no charge
 			return true;
 		}
 		// If the fire button was let go but was pressed at one point then 
@@ -453,9 +453,9 @@ stateResult_t rvWeaponBlaster::State_Fire(const stateParms_t& parms) { // ME: do
 				//int beattime = gameLocal.time % BPMS;
 
 			 // TIMING CHECK ACCORDING TO BEATS IN BETWEEN SECONDS
-				Performance result = Judgement(getInputTime()); // judgement stats
+				Judgement(getInputTime()); // judgement stats
 
-				int bulletAmount = result.comboCount; // scales with combo
+				int bulletAmount =  1 + result.comboCount; // scales with combo
 				float firePower = 0.1f + (result.comboCount / 10); // scales with combo
 
 				int missCheck = 0; // this is only a thing because idk why i cant put startsound in judgement.cpp
@@ -467,8 +467,8 @@ stateResult_t rvWeaponBlaster::State_Fire(const stateParms_t& parms) { // ME: do
 					// then add a way for it to recover afterwards
 				}
 				if (result.comboCount >= 10) { // combo increases blaster stats (more bullets and firepower) but caps at 10 // DANMAKU'S ALL ABOUT FIREPOWER DA ZE
-					int bulletAmount = 10;
-					int firePower = 5.0f;
+					bulletAmount = 10;
+					firePower = 5.0f;
 					if (result.comboCount >= 25) { // if combo is high enough then continue to next gun (permanent)
 						player->GiveItem("weapon_shotgun");
 					}

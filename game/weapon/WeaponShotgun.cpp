@@ -162,20 +162,26 @@ rvWeaponShotgun::State_Fire
 ================
 */
 stateResult_t rvWeaponShotgun::State_Fire( const stateParms_t& parms ) {
+	
+	idPlayer* player;
+	player = gameLocal.GetLocalPlayer();
 
-	Performance result = Judgement(getInputTime()); // judgement stats
+	Judgement(getInputTime());// judgement stats
 
-	int bulletAmount = result.comboCount; // scales with combo
+	int bulletAmount = 1 + result.comboCount; // scales with combo
 	float firePower = 0.1f + (result.comboCount / 10); // scales with combo
 
 	int missCheck = 0; // this is only a thing because idk why i cant put startsound in judgement.cpp
 	if (result.missCount > missCheck) { // check for miss then play sound effect (more to be implemented)
-		StartSound("snd_charge", SND_CHANNEL_ITEM, 0, false, NULL);
+		StartSound("snd_miss", SND_CHANNEL_ITEM, 0, false, NULL);
 		missCheck = result.missCount;
 	}
 	if (result.comboCount >= 10) {
-		int bulletAmount = 10;
-		int firePower = 5.0f;
+		bulletAmount = 10;
+		firePower = 5.0f;
+		if (result.comboCount >= 50) {
+			player->GiveItem("weapon_railgun");
+		}
 	}
 
 	enum {

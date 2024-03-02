@@ -13,6 +13,8 @@
 bool started = false;
 int starttime = 0;
 int guicombo = 0;
+int songduration = 0; // in MS
+int currenttime = 0;
 
 int beatTiming(int input/*, int BPM */) {
 	int BPM = 160;
@@ -20,16 +22,11 @@ int beatTiming(int input/*, int BPM */) {
 	return abs(input % beatDuration - beatDuration / 2);  // the absolute difference between the player's input timing and the middle of the beat duration (this formula might be modified again)
 }	
 
+Performance result;
+
 Performance Judgement(int input) {
 	
 	int timing = beatTiming(input);
-
-	Performance result;
-	result.perfectCount = 0;
-	result.greatCount = 0;
-	result.goodCount = 0;
-	result.missCount = 0;
-	result.comboCount = 0;
 
 	if (timing <= 75) {
 		result.comboCount++;

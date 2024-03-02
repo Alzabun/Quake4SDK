@@ -2059,6 +2059,13 @@ void idPlayer::Spawn( void ) {
 //RITUAL END
 
 	itemCosts = static_cast< const idDeclEntityDef * >( declManager->FindType( DECL_ENTITYDEF, "ItemCostConstants", false ) );
+
+	// ME: reset the judgement values when the player spawns
+	result.perfectCount = 0;
+	result.greatCount = 0;
+	result.goodCount = 0;
+	result.missCount = 0;
+	result.comboCount = 0;
 }
 
 /*
@@ -3361,14 +3368,15 @@ void idPlayer::UpdateHudAmmo( idUserInterface *_hud ) {
 
 	inclip		= weapon->AmmoInClip();
 	ammoamount	= weapon->AmmoAvailable();
+	
 	// ME: this may seem impractial to update the gui from here of all places but this seems to be working the most with what im wanting so 
 	//JUDGEMENT.
-	int songduration = 405000; // in MS
-	int currenttime = gameLocal.time;
+	songduration = 405000; // in MS
+	currenttime = gameLocal.time;
 
 
 	if (!started || currenttime - starttime >= songduration) { // not running for some reason?
-		StartSound("snd_spindown", SND_CHANNEL_ANY, 0, false, 0); // plays Devil Trigger not spindown
+		StartSound("snd_spin_down", SND_CHANNEL_WEAPON, 0, false, NULL); // plays Devil Trigger not spindown
 		starttime = currenttime;
 		started = true;
 	}
@@ -3376,7 +3384,7 @@ void idPlayer::UpdateHudAmmo( idUserInterface *_hud ) {
 	static int lastinput = -1;
 	int input = beatTiming(weapon->getInputTime());
 
-	if (input != lastinput && input <= 200) {
+	if (input != lastinput && input <= 125) {
 		_hud->SetStateInt("player_combo", (guicombo = guicombo + 1));
 		_hud->SetStateInt("player_input", input);
 	}
@@ -4201,7 +4209,7 @@ bool idPlayer::Give( const char *statname, const char *value, bool dropped ) {
 
 /*
 ===============
-idPlayer::GiveItem
+idPlayer::GiveItem // ME: come back to this later
 
 Returns false if the item shouldn't be picked up
 ===============
