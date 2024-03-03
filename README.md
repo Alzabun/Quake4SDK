@@ -14,6 +14,8 @@ Afterward, go to the mod files in "mods\sound\marine\player" and replace custom_
 Open the game and set the BPM you found by opening the console (CTRL + Alt + `) and type in "setbpm [insert BPM amount here]" without the quotes obviously.
 Now from here just follow the instructions of the default music.
 
+### If not / you did change the music:
+
 Once you are in the game, as in you, the player, have spawned, open the console (CTRL + Alt + `) and type "preparemusic". The rhythm mechanics and the song will activate so the mod can start. 
 
 The default song that plays is called Devil Trigger by Ali Edwards, originally from the game Devil May Cry 5. 
