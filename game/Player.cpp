@@ -2064,8 +2064,12 @@ void idPlayer::Spawn( void ) {
 	result.perfectCount = 0;
 	result.greatCount = 0;
 	result.goodCount = 0;
+	result.badCount = 0;
 	result.missCount = 0;
 	result.comboCount = 0;
+
+	started = false;
+
 }
 
 /*
@@ -3356,9 +3360,13 @@ bool idPlayer::UserInfoChanged( void ) {
    
 /*
 ===============
-idPlayer::UpdateHudAmmo
+idPlayer::UpdateHudAmmo // ME: and UpdateRhythm
 ===============
 */
+
+// not sure if it's impractical to update most things relating to my mod here 
+// however, both ammo and my rhythm mechanic only update when the gun is shot
+
 void idPlayer::UpdateHudAmmo( idUserInterface *_hud ) {
 	int inclip;
 	int ammoamount;
@@ -3368,43 +3376,73 @@ void idPlayer::UpdateHudAmmo( idUserInterface *_hud ) {
 
 	inclip		= weapon->AmmoInClip();
 	ammoamount	= weapon->AmmoAvailable();
-	
-	// ME: this may seem impractial to update the gui from here of all places but this seems to be working the most with what im wanting so 
-	//JUDGEMENT.
-	songduration = 405000; // in MS
-	currenttime = gameLocal.time;
+	 
+	//JUDGEMENT BEGIN
+	//
 
+	idPlayer* player;
+	player = gameLocal.GetLocalPlayer();
 
-	if (!started || currenttime - starttime >= songduration) { // not running for some reason?
-		StartSound("snd_spin_down", SND_CHANNEL_WEAPON, 0, false, NULL); // plays Devil Trigger not spindown
-		starttime = currenttime;
+	if (musicpending) { // this will start the music so the mod can begin
 		started = true;
+		musicpending = false;
+		StopSound(SND_CHANNEL_ANY, false);
+		StartSound("snd_custom_music", SND_CHANNEL_ANY, 0, false, 0); // not starting at the beginning?
 	}
 	
 	static int lastinput = -1;
+	int previouscombo = 0;
 	int input = beatTiming(weapon->getInputTime());
+	float accuracy = updateAccuracy(result);
 
-	if (input != lastinput && input <= 125) {
-		_hud->SetStateInt("player_combo", (guicombo = guicombo + 1));
-		_hud->SetStateInt("player_input", input);
-	}
+	if (started) {
+		if (accuracy >= 90) {
+			player->xyspeed += 25; // idk if this is movement speed but this is so i dont forget to add this 
+		} // 1st perk
 
-	if (input <= 75) {
-		_hud->SetStateString("player_ranking", "Perfect");
-		
+		if (missed) { // check for miss then play sound effect
+			if (player != NULL) {
+				StartSound("snd_miss", SND_CHANNEL_ANY, 0, false, NULL); // miss sfx
+				player->health -= 10;
+			}
+			missed = false;
+		}
+
+		if (result.comboCount != previouscombo && player->health <= 100 && result.comboCount > 0) {
+			if (player != NULL) {
+				player->health += 10;
+				previouscombo = result.comboCount;
+			} // 2nd perk
+		}
+
+		if (input != lastinput && input <= 150) {
+			_hud->SetStateInt("player_combo", (guicombo = guicombo + 1));
+			_hud->SetStateInt("player_input", input);
+		}
+
+		if (input <= 75) {
+			_hud->SetStateString("player_ranking", "Perfect");
+		}
+		else if (input <= 100) {
+			_hud->SetStateString("player_ranking", "Great");
+		}
+		else if (input <= 125) {
+			_hud->SetStateString("player_ranking", "Good");
+		}
+		else if (input <= 150) {
+			_hud->SetStateString("player_ranking", "Bad");
+		}
+		else {
+			_hud->SetStateString("player_ranking", "Miss");
+			_hud->SetStateInt("player_combo", (guicombo = 0));
+		}
+
+		_hud->SetStateFloat("player_accuracy", accuracy);
+
+		lastinput = input;
 	}
-	else if (input <= 100) {
-		_hud->SetStateString("player_ranking", "Great");
-	}
-	else if (input <= 125) {
-		_hud->SetStateString("player_ranking", "Good");
-	}
-	else {
-		_hud->SetStateString("player_ranking", "Miss");
-		_hud->SetStateInt("player_combo", (guicombo = 0));
-	}
-	
-	lastinput = input;
+	//
+	// JUDGEMENT END
 
 	if ( ammoamount < 0 ) {
 		// show infinite ammo

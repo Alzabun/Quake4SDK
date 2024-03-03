@@ -3,6 +3,7 @@
 #pragma hdrstop
 
 #include "../Game_local.h"
+#include "../weapon/judgement.h"
 // RAVEN BEGIN
 #include "../ai/AI.h"
 #if !defined(__GAME_PROJECTILE_H__)
@@ -3013,6 +3014,33 @@ void Cmd_TestClientModel_f( const idCmdArgs& args ) {
 //	face->SetModel( "model_player_marine" );
 }
 
+// ME: to start the music so the rhythm is in sync
+void Cmd_prepareMusic_f(const idCmdArgs& args) {
+	idPlayer* player;
+	player = gameLocal.GetLocalPlayer();
+
+	if (!player || started) {
+		musicpending = false;
+		return;
+	}
+	else {
+		musicpending = true;
+		gameLocal.Printf("Fire any gun to start the music!");
+		return;
+	}
+
+	// me: note for tomorrow, if the song is still weird and starts at a different time jsut start working on perks and rewards instead
+	// make custom commands which change the values of the judgements and accuracy for testing purposes
+
+	// update on sound behavior: apparently stopsound only silences the sounds instead of actually resetting them
+	// for some reason musicpending keeps re-activating which is causing the song to  sound like it's breaking up
+	// i just added a return; to the end of this command to see if that makes a difference but ill test that tomorrow
+
+	// basically knowing this see if there's a way to fix it or if there's a sound function that actually stops all sounds
+	// ...OR LITERALLY JUST SET MUSICPENDING TO FALSE AFTER RUNNING THE SONG I THINK I FORGOT THAT
+	// anyway that (probably) doesnt solve the weird music behavior but whatever it's something
+}
+
 
 // RAVEN END
 
@@ -3233,6 +3261,8 @@ void idGameLocal::InitConsoleCommands( void ) {
 	cmdSystem->AddCommand( "buy",					Cmd_BuyItem_f,				CMD_FL_GAME,				"Buy an item (if in a buy zone and the game type supports it)" );
 // RITUAL END
 
+	// ME:
+	cmdSystem->AddCommand("PrepareMusic", Cmd_prepareMusic_f, CMD_FL_GAME, "Will play the modded music once a gun is fired");
 }
 
 /*

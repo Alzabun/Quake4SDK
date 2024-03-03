@@ -59,7 +59,6 @@ rvWeaponBlaster::rvWeaponBlaster
 */
 rvWeaponBlaster::rvWeaponBlaster ( void ) {
 }
-
 /*
 ================
 rvWeaponBlaster::UpdateFlashlight
@@ -126,7 +125,7 @@ bool rvWeaponBlaster::UpdateAttack ( void ) {
 	// delay then transition to the charge state.
 	if ( fireHeldTime != 0 ) {
 		if (gameLocal.time - fireHeldTime > chargeDelay) {
-			SetState ( "Idle", 0 ); // ME: no charge
+			SetState ( "Charged", 4 ); // ME: no charge
 			return true;
 		}
 		// If the fire button was let go but was pressed at one point then 
@@ -439,43 +438,29 @@ stateResult_t rvWeaponBlaster::State_Fire(const stateParms_t& parms) { // ME: do
 			SetState("Idle", 4);
 			return SRESULT_DONE;
 		}
-		
 
-			// ME: use player-> to run most console commands relating t player like player->teleport(lba, bla , bla, bla)
-			// just from this information you can probably figure out the rest from SysCmds.cpp
-			// apparently this can be used to give power ups too but idk what those do
 			if (gameLocal.time - fireHeldTime > chargeTime) {	// ME: NO CHARGING!!!
 				Attack(false, 1, spread, 0, 1.0f);
 				PlayEffect("fx_chargedflash", barrelJointView, false);
 				PlayAnim(ANIMCHANNEL_ALL, "chargedfire", parms.blendFrames);
 			}
 			else {
-				//int beattime = gameLocal.time % BPMS;
 
-			 // TIMING CHECK ACCORDING TO BEATS IN BETWEEN SECONDS
 				Judgement(getInputTime()); // judgement stats
 
-				int bulletAmount =  1 + result.comboCount; // scales with combo
+				int bulletAmount = 1 + result.comboCount; // scales with combo 
 				float firePower = 0.1f + (result.comboCount / 10); // scales with combo
 
-				int missCheck = 0; // this is only a thing because idk why i cant put startsound in judgement.cpp
-				if (result.missCount > missCheck) { // check for miss then play sound effect (more to be implemented)
-					StartSound("snd_charge", SND_CHANNEL_ITEM, 0, false, NULL); // this isnt actually the charge sound i changed it
-					missCheck = result.missCount;
-					// add something to decrease hp here or something
-					// maybe slowness effect?
-					// then add a way for it to recover afterwards
-				}
 				if (result.comboCount >= 10) { // combo increases blaster stats (more bullets and firepower) but caps at 10 // DANMAKU'S ALL ABOUT FIREPOWER DA ZE
-					bulletAmount = 10;
-					firePower = 5.0f;
-					if (result.comboCount >= 25) { // if combo is high enough then continue to next gun (permanent)
+					bulletAmount = 5;
+					firePower = 3.0f;
+					if (result.comboCount >= 50) { // if combo is high enough then get a new gun
 						player->GiveItem("weapon_shotgun");
 					}
 				}
-				Attack(false, bulletAmount, spread * bulletAmount, 0, firePower);
-				PlayEffect("fx_normalflash", barrelJointView, false);
-				PlayAnim(ANIMCHANNEL_ALL, "fire", parms.blendFrames);
+				Attack(false, bulletAmount, spread * (bulletAmount * 2), 0, firePower);
+				PlayEffect("fx_chargedflash", barrelJointView, false);
+				PlayAnim(ANIMCHANNEL_ALL, "chargedfire", parms.blendFrames);
 			}
 
 			fireHeldTime = 0;
