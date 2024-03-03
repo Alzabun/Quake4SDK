@@ -3,6 +3,7 @@
 
 #include "../Game_local.h"
 #include "../Weapon.h"
+#include "judgement.h"
 
 class rvWeaponGrenadeLauncher : public rvWeapon {
 public:
@@ -27,6 +28,8 @@ private:
 
 	const char*			GetFireAnim() const { return (!AmmoInClip()) ? "fire_empty" : "fire"; }
 	const char*			GetIdleAnim() const { return (!AmmoInClip()) ? "idle_empty" : "idle"; }
+
+	int fireHeldTime;
 	
 	CLASS_STATES_PROTOTYPE ( rvWeaponGrenadeLauncher );
 };
@@ -49,6 +52,7 @@ rvWeaponGrenadeLauncher::Spawn
 */
 void rvWeaponGrenadeLauncher::Spawn ( void ) {
 	SetState ( "Raise", 0 );	
+	fireHeldTime = 0;
 }
 
 /*
@@ -138,6 +142,23 @@ rvWeaponGrenadeLauncher::State_Fire
 ================
 */
 stateResult_t rvWeaponGrenadeLauncher::State_Fire ( const stateParms_t& parms ) {
+
+	idPlayer* player;
+	player = gameLocal.GetLocalPlayer();
+
+	Judgement(getInputTime());// judgement stats
+
+	int bulletAmount = 1 + (result.comboCount / 10); // scales with combo // 1 more grenade every 10 combo
+	float firePower = 0.1f + (result.comboCount / 10); // scales with combo
+
+	if (result.comboCount >= 20) {
+		bulletAmount = 3;
+		firePower = 2.0f;
+		if (result.comboCount >= 50) {
+			player->GiveItem("weapon_rocketlauncher");
+		}
+	}
+
 	enum {
 		STAGE_INIT,
 		STAGE_WAIT,
@@ -145,7 +166,11 @@ stateResult_t rvWeaponGrenadeLauncher::State_Fire ( const stateParms_t& parms ) 
 	switch ( parms.stage ) {
 		case STAGE_INIT:
 			nextAttackTime = gameLocal.time + (fireRate * owner->PowerUpModifier ( PMOD_FIRERATE ));
-			Attack ( false, 1, spread, 0, 1.0f );
+
+			fireHeldTime = gameLocal.time;
+			setInputTime(fireHeldTime);
+
+			Attack ( false, bulletAmount, spread, 0, firePower );
 			PlayAnim ( ANIMCHANNEL_ALL, GetFireAnim(), 0 );	
 			return SRESULT_STAGE ( STAGE_WAIT );
 	

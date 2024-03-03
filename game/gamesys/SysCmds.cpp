@@ -3019,7 +3019,7 @@ void Cmd_prepareMusic_f(const idCmdArgs& args) {
 	idPlayer* player;
 	player = gameLocal.GetLocalPlayer();
 
-	if (!player || started) {
+	if (!player) {
 		musicpending = false;
 		return;
 	}
@@ -3028,6 +3028,7 @@ void Cmd_prepareMusic_f(const idCmdArgs& args) {
 		gameLocal.Printf("Fire any gun to start the music!");
 		return;
 	}
+}
 
 	// me: note for tomorrow, if the song is still weird and starts at a different time jsut start working on perks and rewards instead
 	// make custom commands which change the values of the judgements and accuracy for testing purposes
@@ -3039,8 +3040,31 @@ void Cmd_prepareMusic_f(const idCmdArgs& args) {
 	// basically knowing this see if there's a way to fix it or if there's a sound function that actually stops all sounds
 	// ...OR LITERALLY JUST SET MUSICPENDING TO FALSE AFTER RUNNING THE SONG I THINK I FORGOT THAT
 	// anyway that (probably) doesnt solve the weird music behavior but whatever it's something
+
+void Cmd_changecombo_f(const idCmdArgs& args) {
+	idPlayer* player;
+	player = gameLocal.GetLocalPlayer();
+
+	if (!player) {
+		return;
+	}
+
+	result.comboCount = atoi(args.Argv(1));
+	gameLocal.Printf("Combo set to %d\n");
+
 }
 
+void Cmd_changeperfect_f(const idCmdArgs& args) {
+	idPlayer* player;
+	player = gameLocal.GetLocalPlayer();
+
+	if (!player) {
+		return;
+	}
+
+	result.perfectCount = atoi(args.Argv(1));
+	gameLocal.Printf("Perfects set to %d\n");
+}
 
 // RAVEN END
 
@@ -3263,6 +3287,8 @@ void idGameLocal::InitConsoleCommands( void ) {
 
 	// ME:
 	cmdSystem->AddCommand("PrepareMusic", Cmd_prepareMusic_f, CMD_FL_GAME, "Will play the modded music once a gun is fired");
+	cmdSystem->AddCommand("setcombo", Cmd_changecombo_f, CMD_FL_GAME, "Changes the value of combo");
+	cmdSystem->AddCommand("setperfect", Cmd_changeperfect_f, CMD_FL_GAME, "Changes the value of perfect");
 }
 
 /*

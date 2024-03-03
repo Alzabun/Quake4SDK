@@ -12,7 +12,13 @@
 
 bool started = false;
 bool missed = false;
+bool bad = false;
 bool musicpending = false;
+
+bool gavequad = false;
+bool gavehaste = false;
+bool gaveregen = false;
+
 int starttime = 0;
 int guicombo = 0;
 int songduration = 0; // in MS
@@ -46,6 +52,7 @@ Performance Judgement(int input) { // score rankings added depending on beat clo
 		else if (timing <= 150) {
 			result.comboCount++;
 			result.badCount++;
+			bad = true; // not technically a miss but will decrease hp anyway
 		}
 		else {
 			result.comboCount = 0;
@@ -67,5 +74,5 @@ float updateAccuracy(const Performance& performance) { // calculates accuracy li
 	}
 
 	float accuracy = static_cast<float>(weightcalculation) / otherperformance * 100.0f; // this is out of 100.00%
-	return roundf(accuracy * 100.0f) / 100.0f; // formula to reduce to 2 decimal points
+	return roundf(accuracy * 100.0f) / 100.0f; // formula to reduce to 2 decimal points (doesnt work???)
 }

@@ -2068,6 +2068,10 @@ void idPlayer::Spawn( void ) {
 	result.missCount = 0;
 	result.comboCount = 0;
 
+	gavequad = false;
+	gavehaste = false;
+	gaveregen = false;
+
 	started = false;
 
 }
@@ -3387,32 +3391,75 @@ void idPlayer::UpdateHudAmmo( idUserInterface *_hud ) {
 		started = true;
 		musicpending = false;
 		StopSound(SND_CHANNEL_ANY, false);
-		StartSound("snd_custom_music", SND_CHANNEL_ANY, 0, false, 0); // not starting at the beginning?
+		StartSound("snd_custom_music", SND_CHANNEL_ANY, 0, false, NULL); // not starting at the beginning?
 	}
 	
 	static int lastinput = -1;
 	int previouscombo = 0;
 	int input = beatTiming(weapon->getInputTime());
 	float accuracy = updateAccuracy(result);
+	float speed = pm_speed.GetFloat();
 
 	if (started) {
-		if (accuracy >= 90) {
-			player->xyspeed += 25; // idk if this is movement speed but this is so i dont forget to add this 
-		} // 1st perk
+		/*
+		=================
+		PERKS AND REWARDS
+		=================
+		*/
+		if (accuracy >= 95) {
+			inventory.maxHealth = 350; // 1st perk/reward
+			physicsObj.SetSpeed(speed + 200.0f, pm_crouchspeed.GetFloat()); // 2nd perk/reward
+		}
+		else if (accuracy >= 90) {
+			inventory.maxHealth = 300; // 3rd perk/reward
+			physicsObj.SetSpeed(speed + 100.0f, pm_crouchspeed.GetFloat()); // 4th perk/reward
+		}
+		else if (accuracy >= 85) {
+			inventory.maxHealth = 150; // 5th perk/reward
+		}
+
+		if (result.comboCount >= 750 && !gavequad) {
+			GivePowerUp(POWERUP_QUADDAMAGE, 600000, false); // 6th perk/reward
+			gavequad = true;
+		}
+		else if (result.comboCount >= 500 && !gavehaste) {
+			GivePowerUp(POWERUP_HASTE, 600000, false); // 7th perk/reward
+			gavehaste = true;
+		}
+		else if (result.comboCount >= 250 && !gaveregen) {
+			GivePowerUp(POWERUP_REGENERATION, 60000, false); // 8th perk/reward
+			gaveregen = true;
+		}
+		else if (result.comboCount >= 100 && inventory.armor <= inventory.maxarmor) {
+			inventory.armor + 1; // 9th perk/reward
+		}
+
+		if (result.comboCount != previouscombo && health <= inventory.maxHealth && result.comboCount > 0) {
+			if (player != NULL) {
+				health += 10; // 10th perk/reward
+				previouscombo = result.comboCount;
+			}
+		}
+
+		if (bad){
+			if (player != NULL) {
+				health -= 10;
+				inventory.armor -= 10;
+			}
+			bad = false;
+		}
 
 		if (missed) { // check for miss then play sound effect
 			if (player != NULL) {
 				StartSound("snd_miss", SND_CHANNEL_ANY, 0, false, NULL); // miss sfx
-				player->health -= 10;
+				health -= 20;
+				inventory.armor -= 20;
+				ClearPowerUps();
+				gavequad = false;
+				gavehaste = false;
+				gaveregen = false;
 			}
 			missed = false;
-		}
-
-		if (result.comboCount != previouscombo && player->health <= 100 && result.comboCount > 0) {
-			if (player != NULL) {
-				player->health += 10;
-				previouscombo = result.comboCount;
-			} // 2nd perk
 		}
 
 		if (input != lastinput && input <= 150) {

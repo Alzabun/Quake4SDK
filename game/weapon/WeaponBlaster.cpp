@@ -451,7 +451,7 @@ stateResult_t rvWeaponBlaster::State_Fire(const stateParms_t& parms) { // ME: do
 				int bulletAmount = 1 + result.comboCount; // scales with combo 
 				float firePower = 0.1f + (result.comboCount / 10); // scales with combo
 
-				if (result.comboCount >= 10) { // combo increases blaster stats (more bullets and firepower) but caps at 10 // DANMAKU'S ALL ABOUT FIREPOWER DA ZE
+				if (result.comboCount >= 10) { // combo increases blaster stats (more bullets and firepower) but caps at 10
 					bulletAmount = 5;
 					firePower = 3.0f;
 					if (result.comboCount >= 50) { // if combo is high enough then get a new gun

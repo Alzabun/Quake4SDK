@@ -170,12 +170,7 @@ stateResult_t rvWeaponShotgun::State_Fire( const stateParms_t& parms ) {
 
 	int bulletAmount = 1 + result.comboCount; // scales with combo
 	float firePower = 0.1f + (result.comboCount / 10); // scales with combo
-
-	int missCheck = 0; // this is only a thing because idk why i cant put startsound in judgement.cpp
-	if (result.missCount > missCheck) { // check for miss then play sound effect (more to be implemented)
-		StartSound("snd_miss", SND_CHANNEL_ITEM, 0, false, NULL);
-		missCheck = result.missCount;
-	}
+	
 	if (result.comboCount >= 10) {
 		bulletAmount = 10;
 		firePower = 5.0f;
@@ -195,7 +190,7 @@ stateResult_t rvWeaponShotgun::State_Fire( const stateParms_t& parms ) {
 			fireHeldTime = gameLocal.time;
 			setInputTime(fireHeldTime);
 
-			Attack( false, bulletAmount, spread - bulletAmount, 0, firePower );
+			Attack( false, bulletAmount, spread - (bulletAmount * 2), 0, firePower );
 			PlayAnim( ANIMCHANNEL_ALL, "fire", 0 );	
 
 			fireHeldTime = 0;

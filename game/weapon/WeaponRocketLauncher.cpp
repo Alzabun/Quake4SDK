@@ -4,6 +4,7 @@
 #include "../Game_local.h"
 #include "../Weapon.h"
 #include "../client/ClientEffect.h"
+#include "judgement.h"
 
 #ifndef __GAME_PROJECTILE_H__
 #include "../Projectile.h"
@@ -60,6 +61,8 @@ private:
 	stateResult_t		State_Rocket_Reload		( const stateParms_t& parms );
 	
 	stateResult_t		Frame_AddToClip			( const stateParms_t& parms );
+
+	int fireHeldTime;
 	
 	CLASS_STATES_PROTOTYPE ( rvWeaponRocketLauncher );
 };
@@ -93,6 +96,8 @@ rvWeaponRocketLauncher::Spawn
 */
 void rvWeaponRocketLauncher::Spawn ( void ) {
 	float f;
+
+	fireHeldTime = 0;
 
 	idleEmpty = false;
 	
@@ -439,14 +444,32 @@ rvWeaponRocketLauncher::State_Fire
 ================
 */
 stateResult_t rvWeaponRocketLauncher::State_Fire ( const stateParms_t& parms ) {
+
+	idPlayer* player;
+	player = gameLocal.GetLocalPlayer();
+
+	Judgement(getInputTime());// judgement stats
+
+	int bulletAmount = 1 + (result.comboCount / 10); // scales with combo // 1 more grenade every 10 combo
+	float firePower = 0.1f + (result.comboCount / 10); // scales with combo
+
+	if (result.comboCount >= 20) {
+		bulletAmount = 3;
+		firePower = 2.0f;
+	}
+
 	enum {
 		STAGE_INIT,
 		STAGE_WAIT,
 	};	
 	switch ( parms.stage ) {
 		case STAGE_INIT:
-			nextAttackTime = gameLocal.time + (fireRate * owner->PowerUpModifier ( PMOD_FIRERATE ));		
-			Attack ( false, 1, spread, 0, 1.0f );
+			nextAttackTime = gameLocal.time + (fireRate * owner->PowerUpModifier ( PMOD_FIRERATE ));	
+
+			fireHeldTime = gameLocal.time;
+			setInputTime(fireHeldTime);
+
+			Attack ( false, bulletAmount, spread, 0, firePower );
 			PlayAnim ( ANIMCHANNEL_LEGS, "fire", parms.blendFrames );	
 			return SRESULT_STAGE ( STAGE_WAIT );
 	

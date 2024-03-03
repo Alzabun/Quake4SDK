@@ -13,7 +13,12 @@ extern int guicombo;
 
 extern bool started;
 extern bool missed;
+extern bool bad;
 extern bool musicpending; // refer to Cmd_prepareMusic_f
+
+extern bool gavequad;
+extern bool gavehaste;
+extern bool gaveregen;
 
 struct Performance {
 	int perfectCount = 0;
