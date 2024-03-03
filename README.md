@@ -6,7 +6,7 @@ This mod keeps Quake 4 as an FPS shooter but with a twist. Rather than firing a 
 
 ## Instructions:
 
-__If you want to change the music:__
+### If you want to change the music:
 
 Have an MP3 of the file you want to use first and go to this [website](https://getsongbpm.com/tools/audio) to find the BPM of your song or google it alternatively. 
 After you get the BPM, now make sure your audio file is a 32-bit OGG at either 11025 HZ, 22050 HZ, or 44100 HZ. Audacity can be used to check or edit this.
