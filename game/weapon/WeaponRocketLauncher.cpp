@@ -63,6 +63,8 @@ private:
 	stateResult_t		Frame_AddToClip			( const stateParms_t& parms );
 
 	int fireHeldTime;
+	int bulletAmount;
+	int firePower;
 	
 	CLASS_STATES_PROTOTYPE ( rvWeaponRocketLauncher );
 };
@@ -430,6 +432,10 @@ stateResult_t rvWeaponRocketLauncher::State_Idle( const stateParms_t& parms ) {
 				return SRESULT_DONE;
 			}		
 			if ( gameLocal.time > nextAttackTime && wsfl.attack && ( gameLocal.isClient || AmmoInClip ( ) ) ) {
+
+				fireHeldTime = gameLocal.time;
+				setInputTime(fireHeldTime);
+
 				SetState ( "Fire", 2 );
 				return SRESULT_DONE;
 			}
@@ -445,36 +451,44 @@ rvWeaponRocketLauncher::State_Fire
 */
 stateResult_t rvWeaponRocketLauncher::State_Fire ( const stateParms_t& parms ) {
 
-	idPlayer* player;
-	player = gameLocal.GetLocalPlayer();
-
-	Judgement(getInputTime());// judgement stats
-
-	int bulletAmount = 1 + (result.comboCount / 10); // scales with combo // 1 more grenade every 10 combo
-	float firePower = 0.1f + (result.comboCount / 10); // scales with combo
-
-	if (result.comboCount >= 20) {
-		bulletAmount = 3;
-		firePower = 2.0f;
-	}
-
 	enum {
 		STAGE_INIT,
 		STAGE_WAIT,
 	};	
 	switch ( parms.stage ) {
 		case STAGE_INIT:
-			nextAttackTime = gameLocal.time + (fireRate * owner->PowerUpModifier ( PMOD_FIRERATE ));	
+			nextAttackTime = gameLocal.time + (fireRate * owner->PowerUpModifier ( PMOD_FIRERATE ));
+
+			idPlayer* player;
+			player = gameLocal.GetLocalPlayer();
 
 			fireHeldTime = gameLocal.time;
 			setInputTime(fireHeldTime);
 
+			Judgement(getInputTime());// judgement stats
+
+			bulletAmount = 1 + (result.comboCount / 10); // scales with combo // 1 more grenade every 10 combo
+			firePower = 0.1f + (result.comboCount / 10); // scales with combo
+
+			if (result.comboCount >= 20) {
+				bulletAmount = 3;
+				firePower = 2.0f;
+			}
+
 			Attack ( false, bulletAmount, spread, 0, firePower );
-			PlayAnim ( ANIMCHANNEL_LEGS, "fire", parms.blendFrames );	
+			PlayAnim ( ANIMCHANNEL_LEGS, "fire", parms.blendFrames );
+
+			fireHeldTime = 0;
+			setInputTime(fireHeldTime);
+
 			return SRESULT_STAGE ( STAGE_WAIT );
 	
 		case STAGE_WAIT:			
 			if ( wsfl.attack && gameLocal.time >= nextAttackTime && ( gameLocal.isClient || AmmoInClip ( ) ) && !wsfl.lowerWeapon ) {
+
+				fireHeldTime = gameLocal.time;
+				setInputTime(fireHeldTime);
+
 				SetState ( "Fire", 0 );
 				return SRESULT_DONE;
 			}

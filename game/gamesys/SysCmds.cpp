@@ -3023,23 +3023,29 @@ void Cmd_prepareMusic_f(const idCmdArgs& args) {
 		musicpending = false;
 		return;
 	}
+	else if (BPM == 160) {
+		gameLocal.Printf("BPM is at default value 160, meaning the BPM was not set. If you are using the default music, disregard this message.\n");
+		musicpending = true;
+		gameLocal.Printf("Fire any gun to start the music!\n");
+		return;
+
+	}
 	else {
 		musicpending = true;
-		gameLocal.Printf("Fire any gun to start the music!");
+		gameLocal.Printf("Fire any gun to start the music!\n");
 		return;
 	}
 }
 
-	// me: note for tomorrow, if the song is still weird and starts at a different time jsut start working on perks and rewards instead
-	// make custom commands which change the values of the judgements and accuracy for testing purposes
+void Cmd_setBPM_f(const idCmdArgs& args) {
 
-	// update on sound behavior: apparently stopsound only silences the sounds instead of actually resetting them
-	// for some reason musicpending keeps re-activating which is causing the song to  sound like it's breaking up
-	// i just added a return; to the end of this command to see if that makes a difference but ill test that tomorrow
+	if (args.Argc() < 1) {
+		return;
+	}
 
-	// basically knowing this see if there's a way to fix it or if there's a sound function that actually stops all sounds
-	// ...OR LITERALLY JUST SET MUSICPENDING TO FALSE AFTER RUNNING THE SONG I THINK I FORGOT THAT
-	// anyway that (probably) doesnt solve the weird music behavior but whatever it's something
+	BPM = atoi(args.Argv(1));
+	gameLocal.Printf("BPM set\n");
+}
 
 void Cmd_changecombo_f(const idCmdArgs& args) {
 	idPlayer* player;
@@ -3050,7 +3056,7 @@ void Cmd_changecombo_f(const idCmdArgs& args) {
 	}
 
 	result.comboCount = atoi(args.Argv(1));
-	gameLocal.Printf("Combo set to %d\n");
+	gameLocal.Printf("Combo set to %d\n", atoi(args.Argv(1)));
 
 }
 
@@ -3063,7 +3069,7 @@ void Cmd_changeperfect_f(const idCmdArgs& args) {
 	}
 
 	result.perfectCount = atoi(args.Argv(1));
-	gameLocal.Printf("Perfects set to %d\n");
+	gameLocal.Printf("Perfects set to %d\n", atoi(args.Argv(1)));
 }
 
 // RAVEN END
@@ -3289,6 +3295,7 @@ void idGameLocal::InitConsoleCommands( void ) {
 	cmdSystem->AddCommand("PrepareMusic", Cmd_prepareMusic_f, CMD_FL_GAME, "Will play the modded music once a gun is fired");
 	cmdSystem->AddCommand("setcombo", Cmd_changecombo_f, CMD_FL_GAME, "Changes the value of combo");
 	cmdSystem->AddCommand("setperfect", Cmd_changeperfect_f, CMD_FL_GAME, "Changes the value of perfect");
+	cmdSystem->AddCommand("setbpm", Cmd_setBPM_f, CMD_FL_GAME, "Sets the BPM");
 }
 
 /*

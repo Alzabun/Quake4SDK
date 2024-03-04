@@ -34,6 +34,8 @@ private:
 	void				Event_RestoreHum	( void );
 
 	int fireHeldTime;
+	int bulletAmount;
+	int firePower;
 
 	CLASS_STATES_PROTOTYPE ( rvWeaponRailgun );
 };
@@ -162,6 +164,10 @@ stateResult_t rvWeaponRailgun::State_Idle( const stateParms_t& parms ) {
 				return SRESULT_DONE;
 			}		
 			if ( gameLocal.time > nextAttackTime && wsfl.attack && AmmoInClip ( ) ) {
+
+				fireHeldTime = gameLocal.time;
+				setInputTime(fireHeldTime);
+
 				SetState ( "Fire", 0 );
 				return SRESULT_DONE;
 			}  
@@ -186,22 +192,6 @@ rvWeaponRailgun::State_Fire
 */
 stateResult_t rvWeaponRailgun::State_Fire ( const stateParms_t& parms ) {
 
-	idPlayer* player;
-	player = gameLocal.GetLocalPlayer();
-
-	Judgement(getInputTime());// judgement stats
-
-	int bulletAmount = 1 + result.comboCount; // scales with combo
-	float firePower = 10.0f + (result.comboCount / 10); // scales with combo
-
-	if (result.comboCount >= 10) {
-		bulletAmount = 10;
-		firePower = 20.0f;
-		if (result.comboCount >= 50) {
-			player->GiveItem("weapon_grenadelauncher");
-		}
-	}
-
 	enum {
 		STAGE_INIT,
 		STAGE_WAIT,
@@ -209,9 +199,22 @@ stateResult_t rvWeaponRailgun::State_Fire ( const stateParms_t& parms ) {
 	switch ( parms.stage ) {
 		case STAGE_INIT:
 			nextAttackTime = gameLocal.time + (fireRate * owner->PowerUpModifier(PMOD_FIRERATE));
-			
-			fireHeldTime = gameLocal.time;
-			setInputTime(fireHeldTime);
+
+			idPlayer* player;
+			player = gameLocal.GetLocalPlayer();
+
+			Judgement(getInputTime());// judgement stats
+
+			bulletAmount = 1 + result.comboCount; // scales with combo
+			firePower = 10.0f + (result.comboCount / 10); // scales with combo
+
+			if (result.comboCount >= 10) {
+				bulletAmount = 10;
+				firePower = 20.0f;
+				if (result.comboCount >= 150) {
+					player->GiveItem("weapon_grenadelauncher");
+				}
+			}
 
 			Attack ( false, bulletAmount, spread, 0, firePower );
 			PlayAnim ( ANIMCHANNEL_ALL, "fire", 0 );

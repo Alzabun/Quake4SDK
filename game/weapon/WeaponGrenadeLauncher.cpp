@@ -30,6 +30,8 @@ private:
 	const char*			GetIdleAnim() const { return (!AmmoInClip()) ? "idle_empty" : "idle"; }
 
 	int fireHeldTime;
+	int bulletAmount;
+	int firePower;
 	
 	CLASS_STATES_PROTOTYPE ( rvWeaponGrenadeLauncher );
 };
@@ -113,11 +115,19 @@ stateResult_t rvWeaponGrenadeLauncher::State_Idle( const stateParms_t& parms ) {
 			}		
 			if ( !clipSize ) {
 				if ( wsfl.attack && AmmoAvailable ( ) ) {
+
+					fireHeldTime = gameLocal.time;
+					setInputTime(fireHeldTime);
+
 					SetState ( "Fire", 0 );
 					return SRESULT_DONE;
 				}
 			} else { 
 				if ( gameLocal.time > nextAttackTime && wsfl.attack && AmmoInClip ( ) ) {
+
+					fireHeldTime = gameLocal.time;
+					setInputTime(fireHeldTime);
+
 					SetState ( "Fire", 0 );
 					return SRESULT_DONE;
 				}  
@@ -143,22 +153,6 @@ rvWeaponGrenadeLauncher::State_Fire
 */
 stateResult_t rvWeaponGrenadeLauncher::State_Fire ( const stateParms_t& parms ) {
 
-	idPlayer* player;
-	player = gameLocal.GetLocalPlayer();
-
-	Judgement(getInputTime());// judgement stats
-
-	int bulletAmount = 1 + (result.comboCount / 10); // scales with combo // 1 more grenade every 10 combo
-	float firePower = 0.1f + (result.comboCount / 10); // scales with combo
-
-	if (result.comboCount >= 20) {
-		bulletAmount = 3;
-		firePower = 2.0f;
-		if (result.comboCount >= 50) {
-			player->GiveItem("weapon_rocketlauncher");
-		}
-	}
-
 	enum {
 		STAGE_INIT,
 		STAGE_WAIT,
@@ -167,15 +161,35 @@ stateResult_t rvWeaponGrenadeLauncher::State_Fire ( const stateParms_t& parms ) 
 		case STAGE_INIT:
 			nextAttackTime = gameLocal.time + (fireRate * owner->PowerUpModifier ( PMOD_FIRERATE ));
 
-			fireHeldTime = gameLocal.time;
-			setInputTime(fireHeldTime);
+			idPlayer* player;
+			player = gameLocal.GetLocalPlayer();
+
+			Judgement(getInputTime());// judgement stats
+
+			bulletAmount = 1 + result.comboCount; // scales with combo
+			firePower = 0.1f + (result.comboCount / 10); // scales with combo
+
+			if (result.comboCount >= 10) {
+				bulletAmount = 10;
+				firePower = 5.0f;
+				if (result.comboCount >= 100) {
+					player->GiveItem("weapon_railgun");
+				}
+			}
 
 			Attack ( false, bulletAmount, spread, 0, firePower );
 			PlayAnim ( ANIMCHANNEL_ALL, GetFireAnim(), 0 );	
+
+			fireHeldTime = 0;
+
 			return SRESULT_STAGE ( STAGE_WAIT );
 	
 		case STAGE_WAIT:		
 			if ( wsfl.attack && gameLocal.time >= nextAttackTime && AmmoInClip() && !wsfl.lowerWeapon ) {
+
+				fireHeldTime = gameLocal.time;
+				setInputTime(fireHeldTime);
+
 				SetState ( "Fire", 0 );
 				return SRESULT_DONE;
 			}

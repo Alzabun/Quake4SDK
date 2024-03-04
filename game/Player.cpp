@@ -3390,15 +3390,14 @@ void idPlayer::UpdateHudAmmo( idUserInterface *_hud ) {
 	if (musicpending) { // this will start the music so the mod can begin
 		started = true;
 		musicpending = false;
-		StopSound(SND_CHANNEL_ANY, false);
 		StartSound("snd_custom_music", SND_CHANNEL_ANY, 0, false, NULL); // not starting at the beginning?
 	}
 	
 	static int lastinput = -1;
 	int previouscombo = 0;
-	int input = beatTiming(weapon->getInputTime());
+	int input = beatTiming(weapon->getInputTime(), BPM);
 	float accuracy = updateAccuracy(result);
-	float speed = pm_speed.GetFloat();
+	float speed = pm_walkspeed.GetFloat();
 
 	if (started) {
 		/*
@@ -3408,11 +3407,11 @@ void idPlayer::UpdateHudAmmo( idUserInterface *_hud ) {
 		*/
 		if (accuracy >= 95) {
 			inventory.maxHealth = 350; // 1st perk/reward
-			physicsObj.SetSpeed(speed + 200.0f, pm_crouchspeed.GetFloat()); // 2nd perk/reward
+			physicsObj.SetSpeed(speed + 100.0f, pm_crouchspeed.GetFloat()); // 2nd perk/reward
 		}
 		else if (accuracy >= 90) {
 			inventory.maxHealth = 300; // 3rd perk/reward
-			physicsObj.SetSpeed(speed + 100.0f, pm_crouchspeed.GetFloat()); // 4th perk/reward
+			physicsObj.SetSpeed(speed + 50.0f, pm_crouchspeed.GetFloat()); // 4th perk/reward
 		}
 		else if (accuracy >= 85) {
 			inventory.maxHealth = 150; // 5th perk/reward
@@ -3434,16 +3433,15 @@ void idPlayer::UpdateHudAmmo( idUserInterface *_hud ) {
 			inventory.armor + 1; // 9th perk/reward
 		}
 
-		if (result.comboCount != previouscombo && health <= inventory.maxHealth && result.comboCount > 0) {
+		if (health <= inventory.maxHealth && comboup) {
 			if (player != NULL) {
 				health += 10; // 10th perk/reward
-				previouscombo = result.comboCount;
 			}
+			comboup = false;
 		}
 
 		if (bad){
 			if (player != NULL) {
-				health -= 10;
 				inventory.armor -= 10;
 			}
 			bad = false;
@@ -3452,18 +3450,21 @@ void idPlayer::UpdateHudAmmo( idUserInterface *_hud ) {
 		if (missed) { // check for miss then play sound effect
 			if (player != NULL) {
 				StartSound("snd_miss", SND_CHANNEL_ANY, 0, false, NULL); // miss sfx
-				health -= 20;
-				inventory.armor -= 20;
+				health -= 10;
+				inventory.armor -= 10;
 				ClearPowerUps();
 				gavequad = false;
 				gavehaste = false;
 				gaveregen = false;
+				_hud->SetStateString("player_ranking", "Miss");
+				_hud->SetStateInt("player_input", input);
+				_hud->SetStateInt("player_combo", (guicombo = 0));
 			}
 			missed = false;
 		}
 
 		if (input != lastinput && input <= 150) {
-			_hud->SetStateInt("player_combo", (guicombo = guicombo + 1));
+			_hud->SetStateInt("player_combo", (guicombo = result.comboCount));
 			_hud->SetStateInt("player_input", input);
 		}
 
@@ -3478,10 +3479,6 @@ void idPlayer::UpdateHudAmmo( idUserInterface *_hud ) {
 		}
 		else if (input <= 150) {
 			_hud->SetStateString("player_ranking", "Bad");
-		}
-		else {
-			_hud->SetStateString("player_ranking", "Miss");
-			_hud->SetStateInt("player_combo", (guicombo = 0));
 		}
 
 		_hud->SetStateFloat("player_accuracy", accuracy);

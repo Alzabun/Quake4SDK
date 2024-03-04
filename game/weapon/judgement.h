@@ -9,9 +9,11 @@ using namespace std;
  |||||||||||||||||||
 */
 
+extern int BPM;
 extern int guicombo;
 
 extern bool started;
+extern bool comboup;
 extern bool missed;
 extern bool bad;
 extern bool musicpending; // refer to Cmd_prepareMusic_f
@@ -31,7 +33,7 @@ struct Performance {
 
 extern Performance result;
 
-int beatTiming(int input);
+int beatTiming(int input, int BPM);
 
 Performance Judgement(int input);
 float updateAccuracy(const Performance& performance);

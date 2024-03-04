@@ -14,6 +14,7 @@ bool started = false;
 bool missed = false;
 bool bad = false;
 bool musicpending = false;
+bool comboup = true;
 
 bool gavequad = false;
 bool gavehaste = false;
@@ -24,30 +25,34 @@ int guicombo = 0;
 int songduration = 0; // in MS
 int currenttime = 0;
 
-int beatTiming(int input/*, int BPM */) {
-	int BPM = 160;
+int BPM = 160;
+
+int beatTiming(int input, int BPM) {
 	int beatDuration = 60000 / BPM; // the duration of a beat in ms
-	return abs(input % beatDuration - beatDuration / 2);  // the absolute difference between the player's input timing and the middle of the beat duration (this formula might be modified again)
+	return abs(input % beatDuration - beatDuration * 0.75);  // the absolute difference between the player's input timing and the middle of the beat duration (this formula might be modified again)
 }	
 
 Performance result;
 
 Performance Judgement(int input) { // score rankings added depending on beat closeness. the most important part of this whole mod
 	
-	int timing = beatTiming(input);
+	int timing = beatTiming(input, BPM);
 
 	if (started) {
 		if (timing <= 75) {
 			result.comboCount++;
 			result.perfectCount++;
+			comboup = true;
 		}
 		else if (timing <= 100) {
 			result.comboCount++;
 			result.greatCount++;
+			comboup = true;
 		}
 		else if (timing <= 125) {
 			result.comboCount++;
 			result.goodCount++;
+			comboup = true;
 		}
 		else if (timing <= 150) {
 			result.comboCount++;

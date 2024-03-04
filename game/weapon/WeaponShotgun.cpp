@@ -30,6 +30,8 @@ private:
 	stateResult_t		State_Reload	( const stateParms_t& parms );
 
 	int fireHeldTime;
+	int bulletAmount;
+	float firePower;
 	
 	CLASS_STATES_PROTOTYPE( rvWeaponShotgun );
 };
@@ -134,11 +136,19 @@ stateResult_t rvWeaponShotgun::State_Idle( const stateParms_t& parms ) {
 			}		
 			if ( !clipSize ) {
 				if ( gameLocal.time > nextAttackTime && wsfl.attack && AmmoAvailable ( ) ) {
+
+					fireHeldTime = gameLocal.time;
+					setInputTime(fireHeldTime);
+
 					SetState( "Fire", 0 );
 					return SRESULT_DONE;
 				}  
 			} else {				
 				if ( gameLocal.time > nextAttackTime && wsfl.attack && AmmoInClip ( ) ) {
+
+					fireHeldTime = gameLocal.time;
+					setInputTime(fireHeldTime);
+
 					SetState( "Fire", 0 );
 					return SRESULT_DONE;
 				}  
@@ -162,22 +172,6 @@ rvWeaponShotgun::State_Fire
 ================
 */
 stateResult_t rvWeaponShotgun::State_Fire( const stateParms_t& parms ) {
-	
-	idPlayer* player;
-	player = gameLocal.GetLocalPlayer();
-
-	Judgement(getInputTime());// judgement stats
-
-	int bulletAmount = 1 + result.comboCount; // scales with combo
-	float firePower = 0.1f + (result.comboCount / 10); // scales with combo
-	
-	if (result.comboCount >= 10) {
-		bulletAmount = 10;
-		firePower = 5.0f;
-		if (result.comboCount >= 50) {
-			player->GiveItem("weapon_railgun");
-		}
-	}
 
 	enum {
 		STAGE_INIT,
@@ -185,10 +179,24 @@ stateResult_t rvWeaponShotgun::State_Fire( const stateParms_t& parms ) {
 	};	
 	switch ( parms.stage ) {
 		case STAGE_INIT:
+
 			nextAttackTime = gameLocal.time + (fireRate * owner->PowerUpModifier ( PMOD_FIRERATE ));
-			
-			fireHeldTime = gameLocal.time;
-			setInputTime(fireHeldTime);
+
+			idPlayer* player;
+			player = gameLocal.GetLocalPlayer();
+
+			Judgement(getInputTime());// judgement stats
+
+			bulletAmount = 1 + result.comboCount; // scales with combo
+			firePower = 0.1f + (result.comboCount / 10); // scales with combo
+
+			if (result.comboCount >= 10) {
+				bulletAmount = 10;
+				firePower = 5.0f;
+				if (result.comboCount >= 100) {
+					player->GiveItem("weapon_railgun");
+				}
+			}
 
 			Attack( false, bulletAmount, spread - (bulletAmount * 2), 0, firePower );
 			PlayAnim( ANIMCHANNEL_ALL, "fire", 0 );	
@@ -203,6 +211,10 @@ stateResult_t rvWeaponShotgun::State_Fire( const stateParms_t& parms ) {
 				return SRESULT_DONE;
 			}									
 			if ( wsfl.attack && gameLocal.time >= nextAttackTime && AmmoInClip() ) {
+
+				fireHeldTime = gameLocal.time;
+				setInputTime(fireHeldTime);
+
 				SetState( "Fire", 0 );
 				return SRESULT_DONE;
 			}
@@ -304,6 +316,10 @@ stateResult_t rvWeaponShotgun::State_Reload ( const stateParms_t& parms ) {
 				return SRESULT_DONE;
 			}
 			if ( wsfl.attack && AmmoInClip ( ) && gameLocal.time > nextAttackTime ) {
+
+				fireHeldTime = gameLocal.time;
+				setInputTime(fireHeldTime);
+
 				SetState ( "Fire", 0 );
 				return SRESULT_DONE;
 			}
