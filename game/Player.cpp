@@ -3428,15 +3428,16 @@ void idPlayer::UpdateHudAmmo( idUserInterface *_hud ) {
 			inventory.armor + 1; // 9th perk/reward
 		}
 
-		if (health <= inventory.maxHealth && comboup) {
-			if (player != NULL) {
+		if (comboup) {
+			if (player != NULL && health <= inventory.maxHealth) {
 				health += 10; // 10th perk/reward
 			}
+			_hud->SetStateInt("player_combo", (guicombo = result.comboCount));
 			comboup = false;
 		}
 
 		if (bad){
-			if (player != NULL) {
+			if (player != NULL && inventory.armor > 0) {
 				inventory.armor -= 10;
 			}
 			bad = false;

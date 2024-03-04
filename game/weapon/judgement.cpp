@@ -57,7 +57,8 @@ Performance Judgement(int input) { // score rankings added depending on beat clo
 		else if (timing <= 150) {
 			result.comboCount++;
 			result.badCount++;
-			bad = true; // not technically a miss but will decrease hp anyway
+			bad = true; // not technically a miss but will decrease your armor instead (if you have any)
+			comboup = true;
 		}
 		else {
 			result.comboCount = 0;
