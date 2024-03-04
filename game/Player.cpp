@@ -3397,7 +3397,8 @@ void idPlayer::UpdateHudAmmo( idUserInterface *_hud ) {
 	int previouscombo = 0;
 	int input = beatTiming(weapon->getInputTime(), BPM);
 	float accuracy = updateAccuracy(result);
-	float speed = pm_walkspeed.GetFloat();
+	float walkspeed = pm_walkspeed.GetFloat();
+	float speed = pm_speed.GetFloat();
 
 	if (started) {
 		/*
@@ -3405,15 +3406,9 @@ void idPlayer::UpdateHudAmmo( idUserInterface *_hud ) {
 		PERKS AND REWARDS
 		=================
 		*/
-		if (accuracy >= 95) {
-			inventory.maxHealth = 350; // 1st perk/reward
-			physicsObj.SetSpeed(speed + 100.0f, pm_crouchspeed.GetFloat()); // 2nd perk/reward
-		}
-		else if (accuracy >= 90) {
-			inventory.maxHealth = 300; // 3rd perk/reward
-			physicsObj.SetSpeed(speed + 50.0f, pm_crouchspeed.GetFloat()); // 4th perk/reward
-		}
-		else if (accuracy >= 85) {
+	
+		// SPEED PERKS LOCATED IN AdjustSpeed()
+		if (accuracy >= 85) {
 			inventory.maxHealth = 150; // 5th perk/reward
 		}
 
@@ -8870,6 +8865,7 @@ idPlayer::AdjustSpeed
 */
 void idPlayer::AdjustSpeed( void ) {
 	float speed;
+	float accuracy = updateAccuracy(result); // ME
 
 	if ( spectating ) {
 		speed = pm_spectatespeed.GetFloat();
@@ -8889,6 +8885,15 @@ void idPlayer::AdjustSpeed( void ) {
 
 	if ( influenceActive == INFLUENCE_LEVEL3 ) {
 		speed *= 0.33f;
+	}
+	// ME:
+	if (accuracy >= 95) {
+		inventory.maxHealth = 350; // 1st perk/reward
+		speed *= 2; // 2nd perk/reward
+	}
+	else if (accuracy >= 90) {
+		inventory.maxHealth = 300; // 3rd perk/reward
+		speed *= 1.5; // 4th perk/reward
 	}
 
 	physicsObj.SetSpeed( speed, pm_crouchspeed.GetFloat() );

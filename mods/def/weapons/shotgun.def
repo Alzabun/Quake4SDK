@@ -79,7 +79,7 @@ entityDef weapon_shotgun
 	"joint_view_guiLight"			"body"
 	"joint_world_flash"			"muzzle_flash"
 
-	"fireRate"				".25" // .8
+	"fireRate"				".2" // .8
 	"spread"				"7"
 	"hitscans"				"10"
 

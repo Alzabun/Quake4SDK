@@ -84,7 +84,7 @@ entityDef weapon_railgun
   	"joint_view_barrel"			"srocket_muzzle_flash"
 	"joint_world_flash"			"muzzle_flash"
 
-	"fireRate"				"0.4" // 1.6
+	"fireRate"				"0.2" // 1.6
 	"spread"				"0"
 
 	"inv_weapon"				"weapon_railgun"

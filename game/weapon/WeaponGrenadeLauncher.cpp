@@ -172,8 +172,8 @@ stateResult_t rvWeaponGrenadeLauncher::State_Fire ( const stateParms_t& parms ) 
 			if (result.comboCount >= 10) {
 				bulletAmount = 10;
 				firePower = 5.0f;
-				if (result.comboCount >= 100) {
-					player->GiveItem("weapon_railgun");
+				if (result.comboCount >= 200) {
+					player->GiveItem("weapon_rocketlauncher");
 				}
 			}
 

@@ -462,9 +462,6 @@ stateResult_t rvWeaponRocketLauncher::State_Fire ( const stateParms_t& parms ) {
 			idPlayer* player;
 			player = gameLocal.GetLocalPlayer();
 
-			fireHeldTime = gameLocal.time;
-			setInputTime(fireHeldTime);
-
 			Judgement(getInputTime());// judgement stats
 
 			bulletAmount = 1 + (result.comboCount / 10); // scales with combo // 1 more grenade every 10 combo
@@ -479,9 +476,9 @@ stateResult_t rvWeaponRocketLauncher::State_Fire ( const stateParms_t& parms ) {
 			PlayAnim ( ANIMCHANNEL_LEGS, "fire", parms.blendFrames );
 
 			fireHeldTime = 0;
-			setInputTime(fireHeldTime);
 
 			return SRESULT_STAGE ( STAGE_WAIT );
+
 	
 		case STAGE_WAIT:			
 			if ( wsfl.attack && gameLocal.time >= nextAttackTime && ( gameLocal.isClient || AmmoInClip ( ) ) && !wsfl.lowerWeapon ) {
