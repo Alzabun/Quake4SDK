@@ -1,0 +1,31 @@
+Version 3
+// entity 0
+{
+"classname" "worldspawn"
+// primitive 0
+{
+ brushDef3
+ {
+  ( -1 0 0 -912 ) ( ( 0.001953125 0 0.09375 ) ( 0 0.001953125 -0.03125 ) ) "gfx/guis/mainmenu/popup_bg"
+  ( 0 1 0 -1120 ) ( ( 0.001953125 0 0 ) ( 0 0.001953125 -0.03125 ) ) "gfx/guis/mainmenu/popup_bg"
+  ( 1 0 0 -1056 ) ( ( 0.001953125 0 -0.09375 ) ( 0 0.001953125 -0.03125 ) ) "gfx/guis/mainmenu/popup_bg"
+  ( 0 -1 0 -1024 ) ( ( 0.001953125 0 0 ) ( 0 0.001953125 -0.03125 ) ) "gfx/guis/mainmenu/popup_bg"
+  ( 0 0 1 0 ) ( ( 0.001953125 0 -0.09375 ) ( 0 0.001953125 0 ) ) "gfx/guis/mainmenu/popup_bg"
+  ( 0 0 -1 -16 ) ( ( 0.001953125 0 -0.09375 ) ( 0 0.001953125 0 ) ) "gfx/guis/mainmenu/popup_bg"
+ }
+}
+}
+// entity 1
+{
+"classname" "light"
+"name" "light_1"
+"origin" "-24 64 336"
+"light_radius" "720 896 320"
+"_color" "0.000000 0.000000 0.000000"
+}
+// entity 2
+{
+"classname" "info_player_start"
+"name" "info_player_start_1"
+"origin" "0 0 128"
+}
