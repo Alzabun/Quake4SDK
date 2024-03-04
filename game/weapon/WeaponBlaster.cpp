@@ -115,7 +115,15 @@ bool rvWeaponBlaster::UpdateAttack ( void ) {
 			nextAttackTime = gameLocal.time + (fireRate * owner->PowerUpModifier(PMOD_FIRERATE));
 			fireHeldTime   = gameLocal.time; // ME: use this for player input i guess
 			setInputTime(fireHeldTime);
-			
+
+			if (BPMCalculation && taps < taplimit) {
+				taptime[taps++] = fireHeldTime;
+			}
+			else if (BPMCalculation && taps > taplimit) {
+				StartSound("snd_charge_click", SND_CHANNEL_BODY, 0, false, NULL);
+				gameLocal.Printf("Tap amount reached! Run the calculateBPM command again now");
+			}
+
 			viewModel->SetShaderParm ( BLASTER_SPARM_CHARGEGLOW, chargeGlow[0] );
 			// ME: turns out, i dont need to modify this part i think
 		}

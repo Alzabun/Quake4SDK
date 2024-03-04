@@ -3044,7 +3044,27 @@ void Cmd_setBPM_f(const idCmdArgs& args) {
 	}
 
 	BPM = atoi(args.Argv(1));
-	gameLocal.Printf("BPM set\n");
+	gameLocal.Printf("BPM set to %d\n", BPM);
+}
+
+void Cmd_calculateBPM_f(const idCmdArgs& args) {
+	idPlayer* player;
+	player = gameLocal.GetLocalPlayer();
+	
+
+	if (!player) {
+		gameLocal.Printf("Start the game first\n");
+		return;
+	}
+	else if (BPMCalculation) {
+		calculateBPM();
+		gameLocal.Printf("BPM set to %d\n", BPM);
+		BPMCalculation = false;
+	}
+	else {
+		gameLocal.Printf("Start shooting the blaster to the beat of the song you are listening to. \nEnter this command again to get the BPM\n");
+		BPMCalculation = true;
+	}
 }
 
 void Cmd_changecombo_f(const idCmdArgs& args) {
@@ -3295,7 +3315,8 @@ void idGameLocal::InitConsoleCommands( void ) {
 	cmdSystem->AddCommand("PrepareMusic", Cmd_prepareMusic_f, CMD_FL_GAME, "Will play the modded music once a gun is fired");
 	cmdSystem->AddCommand("setcombo", Cmd_changecombo_f, CMD_FL_GAME, "Changes the value of combo");
 	cmdSystem->AddCommand("setperfect", Cmd_changeperfect_f, CMD_FL_GAME, "Changes the value of perfect");
-	cmdSystem->AddCommand("setbpm", Cmd_setBPM_f, CMD_FL_GAME, "Sets the BPM");
+	cmdSystem->AddCommand("setbpm", Cmd_setBPM_f, CMD_FL_GAME, "Sets the BPM (if calculatebpm isnt used)");
+	cmdSystem->AddCommand("calculatebpm", Cmd_calculateBPM_f, CMD_FL_GAME, "Calculates the BPM");
 }
 
 /*

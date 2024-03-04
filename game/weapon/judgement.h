@@ -1,6 +1,8 @@
 #pragma once
 #ifndef JUDGEMENT_H
 #define JUDGEMENT_H
+
+
 using namespace std;
 
 /*
@@ -22,6 +24,12 @@ extern bool gavequad;
 extern bool gavehaste;
 extern bool gaveregen;
 
+extern bool BPMCalculation;
+static const int maxtaps = 100;
+extern int taptime[];
+extern int taps;
+extern int taplimit;
+
 struct Performance {
 	int perfectCount = 0;
 	int greatCount = 0;
@@ -34,6 +42,8 @@ struct Performance {
 extern Performance result;
 
 int beatTiming(int input, int BPM);
+
+void calculateBPM();
 
 Performance Judgement(int input);
 float updateAccuracy(const Performance& performance);
